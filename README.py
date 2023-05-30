@@ -40,33 +40,16 @@ def get_deputies_by_race(race):
     df = pd.DataFrame(deputies)
     return df
 
-st.title('Lista de Deputados Pretos')
+st.title('Contagem de Parlamentares Negros e Brancos')
 
 idLegislatura = st.slider('Escolha de qual legislatura você quer a lista de deputados', 50, 57, 57)
 
 df = baixaDeputados(idLegislatura)
-df_filtered = get_deputies_by_race('PRETA')
+df_black = get_deputies_by_race('PRETA')
+df_white = get_deputies_by_race('BRANCA')
 
-st.header('Deputados pretos e suas pautas')
-st.write(df_filtered)
+st.header('Contagem de Parlamentares')
+st.write(f"Total de Parlamentares Negros: {len(df_black)}")
+st.write(f"Total de Parlamentares Brancos: {len(df_white)}")
 
-st.header('Pautas de governo')
-for index, linha in df_filtered.iterrows():
-    with st.expander(linha['nome']):
-        st.image(linha['urlFoto'], width=130)
-        st.write('Nome: ' + linha['nome'])
-        st.write('Partido: ' + linha['siglaPartido'])
-        st.write('UF: ' + linha['siglaUf'])
-        st.write('ID: ' + str(linha['id']))
-        st.write('Email: ' + str(linha['email']))
-        st.subheader('Pautas de governo:')
-        pautas = linha['ultimoStatus']['pautas']
-        if len(pautas) == 0:
-            st.write('Nenhuma pauta de governo registrada.')
-        else:
-            for pauta in pautas:
-                st.write('- ' + pauta)
-
-if df_filtered.empty:
-    st.subheader(':no_entry_sign: Nenhum deputado preto encontrado! :crying_cat_face:')
 
