@@ -47,7 +47,7 @@ idLegislatura = st.slider('Escolha de qual legislatura você quer a lista de dep
 df = baixaDeputados(idLegislatura)
 df_filtered = get_deputies_by_race('PRETA')
 
-st.header('Lista de deputados pretos')
+st.header('Deputados pretos e suas pautas')
 st.write(df_filtered)
 
 st.header('Pautas de governo')
