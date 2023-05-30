@@ -9,16 +9,43 @@ def baixaDeputados(idLegislatura):
     df = pd.DataFrame(deputados)
     return df
 
-def filter_candidates(df):
-    df_filtered = df[(df['corRaca'] == 'PRETA') & (df['sexo'] != 'MASCULINO')]
-    return df_filtered
+def baixaDeputado(idDeputado):
+    url = f'https://dadosabertos.camara.leg.br/api/v2/deputados/{idDeputado}'
+    r = requests.get(url)
+    deputado = r.json()['dados']
+    return deputado
+
+def get_deputies_by_race(race):
+    url = 'https://dadosabertos.camara.leg.br/api/v2/deputados'
+    params = {'itens': 100, 'pagina': 1}
+    deputies = []
+
+    while True:
+        r = requests.get(url, params=params)
+        data = r.json()['dados']
+        
+        for item in data:
+            id_deputado = item['id']
+            deputado = baixaDeputado(id_deputado)
+            if 'dados' in deputado:
+                ethnicity = deputado['dados']['ultimoStatus']['dados']['etnia']
+                if ethnicity == race:
+                    deputies.append(deputado['dados'])
+        
+        if r.json()['links'][0]['rel'] != 'next':
+            break
+        else:
+            params['pagina'] += 1
+
+    df = pd.DataFrame(deputies)
+    return df
 
 st.title('Lista de Deputados Pretos')
 
 idLegislatura = st.slider('Escolha de qual legislatura você quer a lista de deputados', 50, 57, 57)
 
 df = baixaDeputados(idLegislatura)
-df_filtered = filter_candidates(df)
+df_filtered = get_deputies_by_race('PRETA')
 
 st.header('Lista de deputados pretos')
 st.write(df_filtered)
@@ -42,3 +69,4 @@ for index, linha in df_filtered.iterrows():
 
 if df_filtered.empty:
     st.subheader(':no_entry_sign: Nenhum deputado preto encontrado! :crying_cat_face:')
+
