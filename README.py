@@ -15,7 +15,7 @@ def baixaDeputado(idDeputado):
     deputado = r.json()['dados']
     return deputado
 
-def get_deputies_by_education(education):
+def get_deputies_by_state(state):
     url = 'https://dadosabertos.camara.leg.br/api/v2/deputados'
     params = {'itens': 100, 'pagina': 1}
     deputies = []
@@ -27,10 +27,10 @@ def get_deputies_by_education(education):
         for item in data:
             id_deputado = item['id']
             deputado = baixaDeputado(id_deputado)
-            if 'escolaridade' in deputado['dados']:
-                escolaridade = deputado['dados']['escolaridade']
-                if escolaridade == education:
-                    deputies.append(deputado['dados'])
+            if 'siglaUf' in deputado['ultimoStatus']['dados']:
+                sigla_uf = deputado['ultimoStatus']['dados']['siglaUf']
+                if sigla_uf == state:
+                    deputies.append(deputado['ultimoStatus']['dados'])
         
         if r.json()['links'][0]['rel'] != 'next':
             break
@@ -40,15 +40,29 @@ def get_deputies_by_education(education):
     df = pd.DataFrame(deputies)
     return df
 
-st.title('Lista de Parlamentares Formados em Comunicação')
+st.title('Lista de Parlamentares do Rio de Janeiro e suas Pautas de Governo')
 
 idLegislatura = st.slider('Escolha de qual legislatura você quer a lista de deputados', 50, 57, 57)
 
 df = baixaDeputados(idLegislatura)
-df_communication = get_deputies_by_education('Comunicação')
+df_rj = get_deputies_by_state('RJ')
 
-st.header('Lista de parlamentares formados em Comunicação')
-st.write(df_communication)
+st.header('Lista de parlamentares do Rio de Janeiro')
+st.dataframe(df_rj[['nome', 'siglaPartido', 'siglaUf']])
+
+st.header('Pautas de governo')
+for index, row in df_rj.iterrows():
+    deputado = baixaDeputado(row['id'])
+    pautas = deputado['ultimoStatus']['dados']['pautas']
+    if len(pautas) > 0:
+        st.subheader(row['nome'])
+        st.table(pd.DataFrame(pautas, columns=['Pauta de Governo']))
+    else:
+        st.subheader(row['nome'])
+        st.write('Nenhuma pauta de governo registrada.')
+
+if df_rj.empty:
+    st.subheader(':no_entry_sign: Nenhum parlamentar encontrado para o Rio de Janeiro! :crying_cat_face:')
 
 
 
