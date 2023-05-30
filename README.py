@@ -32,7 +32,7 @@ def get_deputies_by_state(state):
                 if sigla_uf == state:
                     deputies.append(deputado['ultimoStatus']['dados'])
         
-        if r.json()['links'][0]['rel'] != 'next':
+        if 'next' not in r.json()['links'][0]['rel']:
             break
         else:
             params['pagina'] += 1
@@ -54,7 +54,7 @@ st.header('Pautas de governo')
 for index, row in df_rj.iterrows():
     deputado = baixaDeputado(row['id'])
     pautas = deputado['ultimoStatus']['dados']['pautas']
-    if len(pautas) > 0:
+    if pautas:
         st.subheader(row['nome'])
         st.table(pd.DataFrame(pautas, columns=['Pauta de Governo']))
     else:
@@ -63,7 +63,3 @@ for index, row in df_rj.iterrows():
 
 if df_rj.empty:
     st.subheader(':no_entry_sign: Nenhum parlamentar encontrado para o Rio de Janeiro! :crying_cat_face:')
-
-
-
-
