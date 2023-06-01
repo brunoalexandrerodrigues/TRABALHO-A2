@@ -66,7 +66,6 @@ if not selected_deputado_info.empty:
     st.subheader('Informações Pessoais:')
     st.write('ID: ' + str(selected_deputado_info['id']))
     st.write('Email: ' + str(selected_deputado_info['email']))
-    st.write('Rede Social: ' + str(selected_deputado_info['redeSocial']))
     st.write('Data de Nascimento: ' + str(selected_deputado_info['dataNascimento']))
     st.write('Escolaridade: ' + str(selected_deputado_info['escolaridade']))
     st.write('Rede Social: ' + str(selected_deputado_info['redeSocial']))
