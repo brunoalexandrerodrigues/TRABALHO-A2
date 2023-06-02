@@ -22,23 +22,16 @@ st.markdown('<h1 style="text-align: center;">Lista de Deputados em Exercício</h
 idLegislatura = 57  # Defina aqui o valor da legislatura desejada
 
 df = baixaDeputados(idLegislatura)
-df_rio_de_janeiro = df[df['siglaUf'] == 'RJ']  # Filtra apenas os deputados do Rio de Janeiro
-
-st.header('Lista de deputados')
-with st.expander('Mostrar deputados'):
-    st.dataframe(df_rio_de_janeiro[['nome', 'id']])
-
-st.download_button('Baixar lista de deputados', data=df_rio_de_janeiro.to_csv(), file_name='deputados_rj.csv', mime='text/csv')
-
-st.header('Gráficos')
-st.subheader('Número de deputados por partido')
-st.bar_chart(df_rio_de_janeiro['siglaPartido'].value_counts())
-st.subheader('Número de deputados por estado')
-st.bar_chart(df_rio_de_janeiro['siglaUf'].value_counts())
 
 st.header('Lista de deputados do Rio de Janeiro')
-selected_deputado = st.selectbox('Selecione um deputado:', df_rio_de_janeiro['nome'])
-selected_deputado_info = df_rio_de_janeiro[df_rio_de_janeiro['nome'] == selected_deputado]
+df_rio_de_janeiro = df[df['siglaUf'] == 'RJ']  # Filtra apenas os deputados do Rio de Janeiro
+
+col1, col2 = st.columns([1, 5])
+with col1:
+    selected_deputado = st.selectbox('Selecione um deputado:', df_rio_de_janeiro['nome'])
+
+with col2:
+    selected_deputado_info = df_rio_de_janeiro[df_rio_de_janeiro['nome'] == selected_deputado]
 
 if not selected_deputado_info.empty:
     selected_deputado_info = selected_deputado_info.iloc[0]
@@ -50,8 +43,7 @@ if not selected_deputado_info.empty:
     st.write('ID: ' + str(selected_deputado_info['id']))
     st.write('Email: ' + str(selected_deputado_info['email']))
 
-st.header('Lista de Propostas de Pautas de Governo')
-id_deputado = selected_deputado_info['id']
-df_propostas = baixaPropostasDeputado(id_deputado)
-st.dataframe(df_propostas[['id', 'siglaTipo', 'ementa']])
-
+    st.header('Lista de Propostas de Pautas de Governo')
+    id_deputado = selected_deputado_info['id']
+    df_propostas = baixaPropostasDeputado(id_deputado)
+    st.dataframe(df_propostas[['id', 'siglaTipo', 'ementa']])
