@@ -19,24 +19,24 @@ def baixaPropostasDeputado(idDeputado):
 st.title('Lista de Deputados em Exercício')
 st.markdown('<h1 style="text-align: center;">Lista de Deputados em Exercício</h1>', unsafe_allow_html=True)
 
-idLegislatura = st.slider('Escolha de qual legislatura você quer a lista de deputados', 50, 57, 57)
+idLegislatura = 57  # Defina aqui o valor da legislatura desejada
 
 df = baixaDeputados(idLegislatura)
+df_rio_de_janeiro = df[df['siglaUf'] == 'RJ']  # Filtra apenas os deputados do Rio de Janeiro
 
 st.header('Lista de deputados')
 with st.expander('Mostrar deputados'):
-    st.dataframe(df[['nome', 'id']])
+    st.dataframe(df_rio_de_janeiro[['nome', 'id']])
 
-st.download_button('Baixar lista de deputados', data=df.to_csv(), file_name='deputados.csv', mime='text/csv')
+st.download_button('Baixar lista de deputados', data=df_rio_de_janeiro.to_csv(), file_name='deputados_rj.csv', mime='text/csv')
 
 st.header('Gráficos')
 st.subheader('Número de deputados por partido')
-st.bar_chart(df['siglaPartido'].value_counts())
+st.bar_chart(df_rio_de_janeiro['siglaPartido'].value_counts())
 st.subheader('Número de deputados por estado')
-st.bar_chart(df['siglaUf'].value_counts())
+st.bar_chart(df_rio_de_janeiro['siglaUf'].value_counts())
 
 st.header('Lista de deputados do Rio de Janeiro')
-df_rio_de_janeiro = df[df['siglaUf'] == 'RJ']
 selected_deputado = st.selectbox('Selecione um deputado:', df_rio_de_janeiro['nome'])
 selected_deputado_info = df_rio_de_janeiro[df_rio_de_janeiro['nome'] == selected_deputado]
 
