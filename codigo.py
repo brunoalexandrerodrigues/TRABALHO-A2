@@ -9,14 +9,14 @@ def baixaDeputados(idLegislatura):
     df = pd.DataFrame(deputados)
     return df
 
-def baixaPropostasDeputado(idDeputado):
-    url = 'https://dadosabertos.camara.leg.br/api/v2/proposicoes?itens=100&idAutor=' + str(idDeputado)
+def baixaFrentesDeputado(idDeputado):
+    url = f'https://dadosabertos.camara.leg.br/api/v2/deputados/{idDeputado}/frentes'
     r = requests.get(url)
-    propostas = r.json()['dados']
-    df = pd.DataFrame(propostas)
+    frentes = r.json()['dados']
+    df = pd.DataFrame(frentes)
     return df
 
-st.title('TRABALHO FINAL PROGRAMAÇÃO')
+st.title('Lista de Deputados em Exercício')
 st.markdown('<h1 style="text-align: center;">Lista de Deputados em Exercício</h1>', unsafe_allow_html=True)
 
 idLegislatura = 57  # Defina aqui o valor da legislatura desejada
@@ -43,7 +43,8 @@ if not selected_deputado_info.empty:
     st.write('ID: ' + str(selected_deputado_info['id']))
     st.write('Email: ' + str(selected_deputado_info['email']))
 
-    st.header('Lista de Propostas de Pautas de Governo')
+    st.header('Lista de Frentes Parlamentares do Deputado')
     id_deputado = selected_deputado_info['id']
-    df_propostas = baixaPropostasDeputado(id_deputado)
-    st.dataframe(df_propostas[['id', 'siglaTipo', 'ementa']])
+    df_frentes = baixaFrentesDeputado(id_deputado)
+    st.dataframe(df_frentes[['id', 'nome']])
+
