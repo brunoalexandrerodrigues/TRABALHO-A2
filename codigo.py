@@ -1,40 +1,8 @@
-pip install requests zipfile pandas
+pip install streamlit requests zipfile pandas
 import streamlit as st
-import pandas as pd
 import requests
 import zipfile
-
-# Função para fazer o download do arquivo ZIP
-def download_file(url, save_as):
-    response = requests.get(url, stream=True)
-    response.raise_for_status()
-    with open(save_as, 'wb') as file:
-        for chunk in response.iter_content(chunk_size=8192):
-            file.write(chunk)
-
-# Definir URL do arquivo ZIP das propostas de governo do Rio de Janeiro
-url = 'https://cdn.tse.jus.br/estatistica/sead/odsele/proposta_governo/proposta_governo_2022_RJ.zip'
-zip_filename = 'proposta_governo_2022_RJ.zip'
-
-# Fazer o download do arquivo ZIP
-st.write('Baixando arquivo ZIP...')
-download_file(url, zip_filename)
-st.write('Download concluído!')
-
-# Extrair o conteúdo do arquivo ZIP
-with zipfile.ZipFile(zip_filename, 'r') as zip_ref:
-    st.write('Extraindo o arquivo ZIP...')
-    zip_ref.extractall('proposta_governo_2022_RJ')
-    st.write('Extração concluída!')
-
-# Ler os dados do arquivo CSV extraído
-csv_filename = 'proposta_governo_2022_RJ/proposta_governo_2022_RJ.csv'
-df_propostas = pd.read_csv(csv_filename)
-
-# Exibir os dados das propostas de governo
-st.header('Propostas de Governo do Rio de Janeiro')
-st.dataframe(df_propostas)
-
+import pandas as pd
 
 def baixaDeputados(idLegislatura):
     url = 'https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=' + str(idLegislatura)
@@ -50,7 +18,15 @@ def baixaProposicoesDeputado(idDeputado):
     df = pd.DataFrame(proposicoes)
     return df
 
-st.title('Lista de Deputados em Exercício')
+# Função para fazer o download do arquivo ZIP
+def download_file(url, save_as):
+    response = requests.get(url, stream=True)
+    response.raise_for_status()
+    with open(save_as, 'wb') as file:
+        for chunk in response.iter_content(chunk_size=8192):
+            file.write(chunk)
+
+st.title('Lista de Deputados e Propostas de Governo')
 
 idLegislatura = 57  # Defina aqui o valor da legislatura desejada
 
@@ -73,7 +49,32 @@ if not selected_deputado_info.empty:
     st.write('ID: ' + str(selected_deputado_info['id']))
     st.write('Email: ' + str(selected_deputado_info['email']))
 
-    st.header('Lista de Proposições do Deputado')
-    id_deputado = selected_deputado_info['id']
-    df_proposicoes = baixaProposicoesDeputado(id_deputado)
-    st.dataframe(df_proposicoes[['id', 'ementa']])
+    st.header('Propostas de Governo do Rio de Janeiro')
+
+    # Definir URL do arquivo ZIP das propostas de governo do Rio de Janeiro
+    url = 'https://cdn.tse.jus.br/estatistica/sead/odsele/proposta_governo/proposta_governo_2022_RJ.zip'
+    zip_filename = 'proposta_governo_2022_RJ.zip'
+
+    # Fazer o download do arquivo ZIP
+    st.write('Baixando arquivo ZIP das propostas de governo...')
+    download_file(url, zip_filename)
+    st.write('Download concluído!')
+
+    # Extrair o conteúdo do arquivo ZIP
+    with zipfile.ZipFile(zip_filename, 'r') as zip_ref:
+        st.write('Extraindo o arquivo ZIP das propostas de governo...')
+        zip_ref.extractall('proposta_governo_2022_RJ')
+        st.write('Extração concluída!')
+
+    # Ler os dados do arquivo CSV extraído
+    csv_filename = 'proposta_governo_2022_RJ/proposta_governo_2022_RJ.csv'
+    df_propostas = pd.read_csv(csv_filename)
+
+    # Filtrar as propostas de governo pelo ID do deputado selecionado
+    df_propostas_deputado = df_propostas[df_propostas['id_cand'] == selected_deputado_info['id']]
+
+    # Exibir os dados das propostas de governo
+    st.dataframe(df_propostas_deputado)
+else:
+    st.write(':no_entry_sign: Sem informações disponíveis para o deputado selecionado!')
+
