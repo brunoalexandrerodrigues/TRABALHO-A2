@@ -17,7 +17,6 @@ def baixaProposicoesDeputado(idDeputado):
     return df
 
 st.title('Lista de Deputados em Exercício')
-st.markdown('<h1 style="text-align: center;">Lista de Deputados em Exercício</h1>', unsafe_allow_html=True)
 
 idLegislatura = 57  # Defina aqui o valor da legislatura desejada
 
