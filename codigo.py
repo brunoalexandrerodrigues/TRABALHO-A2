@@ -26,7 +26,7 @@ df = baixaDeputados(idLegislatura)
 st.header('Lista de deputados do Rio de Janeiro')
 df_rio_de_janeiro = df[df['siglaUf'] == 'RJ']  # Filtra apenas os deputados do Rio de Janeiro
 
-col1, col2 = st.columns([0.2, 5])
+col1, col2 = st.columns([2, 6])
 with col1:
     selected_deputado = st.selectbox('Selecione um deputado:', df_rio_de_janeiro['nome'])
 
