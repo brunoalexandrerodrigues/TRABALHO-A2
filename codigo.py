@@ -57,3 +57,14 @@ if not selected_deputado_info.empty:
     id_deputado = selected_deputado_info['id']
     df_proposicoes = baixaProposicoesDeputado(id_deputado)
     st.dataframe(df_proposicoes[['id', 'ementa']])
+    def baixaProposicoesDeputado(idDeputado):
+    url = f'https://dadosabertos.camara.leg.br/api/v2/proposicoes?itens=100&autorId={idDeputado}&ordem=ASC&ordenarPor=id'
+    r = requests.get(url)
+    data = r.json()
+    if 'dados' in data:
+        proposicoes = data['dados']
+        df = pd.DataFrame(proposicoes)
+        return df
+    else:
+        return pd.DataFrame()
+
