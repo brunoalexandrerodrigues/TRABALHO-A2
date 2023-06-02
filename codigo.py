@@ -9,11 +9,11 @@ def baixaDeputados(idLegislatura):
     df = pd.DataFrame(deputados)
     return df
 
-def baixaFrentesDeputado(idDeputado):
-    url = f'https://dadosabertos.camara.leg.br/api/v2/deputados/{idDeputado}/frentes'
+def baixaProposicoesDeputado(idDeputado):
+    url = f'https://dadosabertos.camara.leg.br/api/v2/deputados/{idDeputado}/proposicoes'
     r = requests.get(url)
-    frentes = r.json()['dados']
-    df = pd.DataFrame(frentes)
+    proposicoes = r.json()['dados']
+    df = pd.DataFrame(proposicoes)
     return df
 
 st.title('Lista de Deputados em Exercício')
@@ -26,7 +26,7 @@ df = baixaDeputados(idLegislatura)
 st.header('Lista de deputados do Rio de Janeiro')
 df_rio_de_janeiro = df[df['siglaUf'] == 'RJ']  # Filtra apenas os deputados do Rio de Janeiro
 
-col1, col2 = st.columns([1, 5])
+col1, col2 = st.columns([0.2, 5])
 with col1:
     selected_deputado = st.selectbox('Selecione um deputado:', df_rio_de_janeiro['nome'])
 
@@ -43,8 +43,7 @@ if not selected_deputado_info.empty:
     st.write('ID: ' + str(selected_deputado_info['id']))
     st.write('Email: ' + str(selected_deputado_info['email']))
 
-    st.header('Lista de Frentes Parlamentares do Deputado')
+    st.header('Lista de Proposições do Deputado')
     id_deputado = selected_deputado_info['id']
-    df_frentes = baixaFrentesDeputado(id_deputado)
-    st.dataframe(df_frentes[['id', 'nome']])
-
+    df_proposicoes = baixaProposicoesDeputado(id_deputado)
+    st.dataframe(df_proposicoes[['id', 'ementa']])
