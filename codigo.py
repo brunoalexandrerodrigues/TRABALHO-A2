@@ -1,4 +1,4 @@
-pip install streamlit requests zipfile pandas
+!pip install streamlit requests zipfile pandas
 import streamlit as st
 import pandas as pd
 import requests
