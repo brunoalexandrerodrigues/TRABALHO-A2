@@ -10,7 +10,7 @@ def baixaDeputados(idLegislatura):
     return df
 
 def baixaProposicoesDeputado(idDeputado):
-    url = f'https://dadosabertos.camara.leg.br/api/v2/deputados/{idDeputado}/proposicoes'
+    url = f'https://dadosabertos.camara.leg.br/api/v2/proposicoes?itens=100&autorId={idDeputado}&ordem=ASC&ordenarPor=id'
     r = requests.get(url)
     proposicoes = r.json()['dados']
     df = pd.DataFrame(proposicoes)
@@ -26,12 +26,9 @@ df = baixaDeputados(idLegislatura)
 st.header('Lista de deputados do Rio de Janeiro')
 df_rio_de_janeiro = df[df['siglaUf'] == 'RJ']  # Filtra apenas os deputados do Rio de Janeiro
 
-col1, col2 = st.columns([2, 6])
-with col1:
-    selected_deputado = st.selectbox('Selecione um deputado:', df_rio_de_janeiro['nome'])
+selected_deputado = st.selectbox('Selecione um deputado:', df_rio_de_janeiro['nome'])
 
-with col2:
-    selected_deputado_info = df_rio_de_janeiro[df_rio_de_janeiro['nome'] == selected_deputado]
+selected_deputado_info = df_rio_de_janeiro[df_rio_de_janeiro['nome'] == selected_deputado]
 
 if not selected_deputado_info.empty:
     selected_deputado_info = selected_deputado_info.iloc[0]
