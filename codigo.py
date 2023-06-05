@@ -1,4 +1,3 @@
-#pip install streamlit pandas requests 
 import streamlit as st
 import pandas as pd
 import requests
@@ -20,6 +19,17 @@ def baixaProposicoesDeputado(idDeputado):
         except KeyError:
             pass
     return proposicoes
+
+def baixaTiposProposicao():
+    url = "https://dadosabertos.camara.leg.br/api/v2/referencias/tiposProposicao"
+    r = requests.get(url)
+    tipos_proposicao = []
+    if r.status_code == 200:
+        try:
+            tipos_proposicao = r.json()["dados"]
+        except KeyError:
+            pass
+    return tipos_proposicao
 
 st.title("Lista de Deputados em Exercício")
 
@@ -53,3 +63,10 @@ if not selected_deputado_info.empty:
         st.write("ID: ", proposta["id"])
         st.write("Ementa: ", proposta["ementa"])
         st.markdown("---")
+
+st.header("Tipos de Proposição")
+tipos_proposicao = baixaTiposProposicao()
+for tipo in tipos_proposicao:
+    st.write("ID: ", tipo["id"])
+    st.write("Descrição: ", tipo["descricao"])
+    st.markdown("---")
