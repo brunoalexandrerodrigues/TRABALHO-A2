@@ -20,9 +20,9 @@ def baixaProposicoes():
             proposicoes = root.findall(".//proposicoes/proposicao")
             return proposicoes
         except ET.ParseError:
-            return []
+            return [proposicoes]
     else:
-        return []
+        return ["ESSE DEPUTADO NÃO TEM PROPOSTAS"]
 
 st.title('Lista de Deputados em Exercício')
 
