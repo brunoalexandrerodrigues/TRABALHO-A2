@@ -5,7 +5,7 @@ import requests
 def baixaAutoresProposicoes():
     url = "https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json"
     r = requests.get(url)
-    autores_proposicoes = r.json()["dados"]
+    autores_proposicoes = r.json()
     return autores_proposicoes
 
 def baixaDeputados(idLegislatura):
@@ -30,7 +30,7 @@ st.title("Lista de Deputados do Rio de Janeiro que são Autores de Proposições
 
 autores_proposicoes = baixaAutoresProposicoes()
 
-autores_proposicoes_rj = [autor["idAutor"] for autor in autores_proposicoes if autor["ufAutor"] == "RJ"]
+autores_proposicoes_rj = [autor["idAutor"] for autor in autores_proposicoes if autor["dados"]["ufAutor"] == "RJ"]
 
 idLegislatura = 57  # Defina aqui o valor da legislatura desejada
 
