@@ -18,9 +18,8 @@ def baixaProposicoes():
             proposicoes = r.json()['dados']
             return proposicoes
         except KeyError:
-            return []
-    else:
-        return []
+            pass
+    return []
 
 st.title('Lista de Deputados em Exercício')
 
