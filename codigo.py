@@ -3,22 +3,19 @@ import pandas as pd
 import requests
 
 def baixaDeputados(idLegislatura):
-    url = f'https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura={idLegislatura}'
+    url = 'https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=' + str(idLegislatura)
     r = requests.get(url)
     deputados = r.json()['dados']
     df = pd.DataFrame(deputados)
     return df
 
-def baixaProposicoesDeputado(idDeputado):
-    url = f'https://dadosabertos.camara.leg.br/api/v2/proposicoes?itens=100&autorId={idDeputado}&ordem=ASC&ordenarPor=id'
+def baixaProposicoes():
+    url = "https://dadosabertos.camara.leg.br/api/v2/proposicoes?ordem=ASC&ordenarPor=id"
     r = requests.get(url)
-    data = r.json()
-    if 'dados' in data:
-        proposicoes = data['dados']
-        df = pd.DataFrame(proposicoes)
-        return df
+    if r.status_code == 200:
+        return r.json()["dados"]
     else:
-        return pd.DataFrame()
+        return []
 
 st.title('Lista de Deputados em Exercício')
 
@@ -44,10 +41,11 @@ if not selected_deputado_info.empty:
     st.write('Email: ' + str(selected_deputado_info['email']))
 
     st.header('Lista de Proposições do Deputado')
-    id_deputado = selected_deputado_info['id']
-    df_proposicoes = baixaProposicoesDeputado(id_deputado)
-    
-    if not df_proposicoes.empty:
-        st.dataframe(df_proposicoes[['id', 'ementa']])
-    else:
-        st.write('Nenhuma proposição encontrada para este deputado.')
+    proposicoes = baixaProposicoes()
+    for proposta in proposicoes:
+        if proposta['idAutor'] == selected_deputado_info['id']:
+            st.write("ID: ", proposta["id"])
+            st.write("Ementa: ", proposta["ementa"])
+            st.markdown("---")
+        else:
+            st.write("Não foram encontradas proposições.")
