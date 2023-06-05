@@ -5,7 +5,7 @@ import requests
 def baixaAutoresProposicoes():
     url = "https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json"
     r = requests.get(url)
-    autores_proposicoes = r.json()
+    autores_proposicoes = r.json()["dados"]
     return autores_proposicoes
 
 def baixaDeputados(idLegislatura):
@@ -30,7 +30,7 @@ st.title("Lista de Deputados do Rio de Janeiro que são Autores de Proposições
 
 autores_proposicoes = baixaAutoresProposicoes()
 
-autores_proposicoes_rj = [autor for autor in autores_proposicoes if autor["siglaUf"] == "RJ"]
+autores_proposicoes_rj = [autor for autor in autores_proposicoes if autor["dados"]["siglaUf"] == "RJ"]
 
 deputados_rj_ids = [autor["idAutor"] for autor in autores_proposicoes_rj]
 
@@ -60,6 +60,6 @@ if not selected_deputado_info.empty:
     st.header("Lista de Proposições do Deputado")
     proposicoes = baixaProposicoesDeputado(selected_deputado_info["id"])
     for proposta in proposicoes:
-        st.write("ID: ", proposta.get("id"))
-        st.write("Ementa: ", proposta.get("ementa"))
+        st.write("ID: ", proposta["id"])
+        st.write("Ementa: ", proposta["ementa"])
         st.markdown("---")
