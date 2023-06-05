@@ -29,7 +29,7 @@ deputados = baixaDeputados(57)
 
 autores_proposicoes_rj = []
 for autor in autores_proposicoes:
-    if autor.get("dados", {}).get("siglaUFAutor") == "RJ":
+    if isinstance(autor, dict) and autor.get("dados", {}).get("siglaUFAutor") == "RJ":
         id_autor = autor.get("idAutor")
         deputado_rj = deputados[deputados["id"] == id_autor]
         if not deputado_rj.empty:
