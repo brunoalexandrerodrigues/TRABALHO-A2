@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import requests
+import xml.etree.ElementTree as ET
 
 def baixaDeputados(idLegislatura):
     url = 'https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=' + str(idLegislatura)
@@ -13,7 +14,9 @@ def baixaProposicoes():
     url = "https://dadosabertos.camara.leg.br/api/v2/proposicoes?ordem=ASC&ordenarPor=id"
     r = requests.get(url)
     if r.status_code == 200:
-        return r.json()["dados"]
+        root = ET.fromstring(r.text)
+        proposicoes = root.findall(".//proposicoes/proposicao")
+        return proposicoes
     else:
         return []
 
@@ -43,8 +46,8 @@ if not selected_deputado_info.empty:
     st.header('Lista de Proposições do Deputado')
     proposicoes = baixaProposicoes()
     for proposta in proposicoes:
-        id_autor = proposta['idAutor']
-        if id_autor == selected_deputado_info['id']:
-            st.write("ID: ", proposta["id"])
-            st.write("Ementa: ", proposta["ementa"])
+        id_autor = proposta.find("autor/ideCadastro").text
+        if id_autor == str(selected_deputado_info['id']):
+            st.write("ID: ", proposta.find("id").text)
+            st.write("Ementa: ", proposta.find("ementa").text)
             st.markdown("---")
