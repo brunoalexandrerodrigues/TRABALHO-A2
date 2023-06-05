@@ -27,7 +27,7 @@ autores_proposicoes = baixaAutoresProposicoes()
 proposicoes = baixaProposicoes()
 deputados = baixaDeputados(57)
 
-autores_proposicoes_rj = [autor for autor in autores_proposicoes if autor.get("siglaUfAutor") == "RJ"]
+autores_proposicoes_rj = [autor for autor in autores_proposicoes if autor.get("siglaUfAutor") == ""RJ""]
 
 df_autores_proposicoes_rj = pd.DataFrame(autores_proposicoes_rj)
 df_proposicoes = pd.DataFrame(proposicoes)
