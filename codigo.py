@@ -30,23 +30,24 @@ deputados = baixaDeputados(57)
 autores_proposicoes_rj = []
 for autor in autores_proposicoes:
     if isinstance(autor, dict) and autor.get("siglaUFAutor") == "RJ":
-        id_proposicao = autor.get("idProposicao")
-        proposicao = next((p for p in proposicoes if p.get("id") == id_proposicao), None)
-        if proposicao is not None:
-            autor["ementa"] = proposicao.get("ementa")
-            autor["uriProposicao"] = proposicao.get("uri")
+        id_deputado = autor.get("idDeputadoAutor")
+        deputado = next((d for d in deputados if d.get("id") == id_deputado), None)
+        if deputado is not None:
+            autor["ementa"] = deputado.get("ementa")
+            autor["uriDeputado"] = deputado.get("uri")
             autores_proposicoes_rj.append(autor)
 
 df_autores_proposicoes_rj = pd.DataFrame(autores_proposicoes_rj)
 
 deputados_rj = deputados[deputados['siglaUf'] == 'RJ']
 
-df_deputados_rj_autores = pd.merge(df_autores_proposicoes_rj, deputados_rj, left_on="idAutor", right_on="id", how="inner")
+df_deputados_rj_autores = pd.merge(df_autores_proposicoes_rj, deputados_rj, left_on="idDeputadoAutor", right_on="id", how="inner")
 
 for index, row in df_deputados_rj_autores.iterrows():
     st.markdown(f"## {row['nomeAutor']} ({row['siglaPartidoAutor']})")
     st.image(row['urlFoto'], width=200)
     st.write(f"**Ementa:** {row['ementa']}")
-    st.write(f"**ID da Proposição:** {row['idProposicao']}")
-    st.write(f"**URI da Proposição:** {row['uriProposicao']}")
+    st.write(f"**ID do Deputado:** {row['idDeputadoAutor']}")
+    st.write(f"**URI do Deputado:** {row['uriDeputado']}")
     st.write("---")
+
