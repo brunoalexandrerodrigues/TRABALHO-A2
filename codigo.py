@@ -1,3 +1,4 @@
+import streamlit as st
 import requests
 
 def get_proposicoes(dataInicio=None, dataFim=None, id=None, ano=None, dataApresentacaoInicio=None, dataApresentacaoFim=None, idAutor=None, autor=None):
@@ -18,9 +19,26 @@ def get_proposicoes(dataInicio=None, dataFim=None, id=None, ano=None, dataAprese
     else:
         return []
 
-# Exemplo de uso:
-proposicoes = get_proposicoes(dataInicio="2023-05-01", dataFim="2023-05-31")
-for proposta in proposicoes:
-    print("ID: ", proposta["id"])
-    print("Ementa: ", proposta["ementa"])
-    print("-----")
+def main():
+    st.title("Consulta de Proposições na Câmara dos Deputados")
+    st.write("Este aplicativo consulta as proposições na Câmara dos Deputados.")
+
+    dataInicio = st.text_input("Data de Início (formato: AAAA-MM-DD)")
+    dataFim = st.text_input("Data de Fim (formato: AAAA-MM-DD)")
+    idAutor = st.text_input("ID do Autor")
+    autor = st.text_input("Nome do Autor")
+    
+    if st.button("Buscar Proposições"):
+        proposicoes = get_proposicoes(dataInicio=dataInicio, dataFim=dataFim, idAutor=idAutor, autor=autor)
+        
+        if proposicoes:
+            st.write(f"Foram encontradas {len(proposicoes)} proposições:")
+            for proposta in proposicoes:
+                st.write(f"ID: {proposta['id']}")
+                st.write(f"Ementa: {proposta['ementa']}")
+                st.write("-----")
+        else:
+            st.write("Nenhuma proposição encontrada.")
+
+if __name__ == "__main__":
+    main()
