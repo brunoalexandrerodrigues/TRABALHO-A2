@@ -40,7 +40,10 @@ df_autores_proposicoes_rj = pd.DataFrame(autores_proposicoes_rj)
 
 deputados_rj = deputados[deputados['siglaUf'] == 'RJ']
 
-df_deputados_rj_autores = pd.merge(df_autores_proposicoes_rj, deputados_rj, left_on="idDeputadoAutor", right_on="id", how="inner")
+if 'idDeputadoAutor' in df_autores_proposicoes_rj.columns:
+    df_deputados_rj_autores = pd.merge(df_autores_proposicoes_rj, deputados_rj, left_on="idDeputadoAutor", right_on="id", how="inner")
+else:
+    st.warning("A coluna 'idDeputadoAutor' não está presente no DataFrame.")
 
 for index, row in df_deputados_rj_autores.iterrows():
     st.markdown(f"## {row['nome']} ({row['siglaPartido']})")
