@@ -9,29 +9,32 @@ def baixaDeputados(idLegislatura):
     df = pd.DataFrame(deputados)
     return df
 
-def baixaProposicoesDeputado(idDeputado):
-    url = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes?itens=100&autorId={idDeputado}&ordem=ASC&ordenarPor=id"
+def baixaAutoresProposicoes():
+    url = "https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json"
     r = requests.get(url)
-    proposicoes = []
-    if r.status_code == 200:
-        try:
-            proposicoes = r.json()["dados"]
-        except KeyError:
-            pass
+    autores_proposicoes = r.json()
+    return autores_proposicoes
+
+def baixaProposicoes():
+    url = "https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json"
+    r = requests.get(url)
+    proposicoes = r.json()
     return proposicoes
 
-st.title("Lista de Deputados em Exercício")
+st.title("Lista de Deputados Autores de Proposições do Rio de Janeiro")
 
 idLegislatura = 57  # Defina aqui o valor da legislatura desejada
 
 df = baixaDeputados(idLegislatura)
+autores_proposicoes = baixaAutoresProposicoes()
+proposicoes = baixaProposicoes()
 
-st.header("Lista de deputados do Rio de Janeiro")
-df_rio_de_janeiro = df[df["siglaUf"] == "RJ"]  # Filtra apenas os deputados do Rio de Janeiro
+# Filtra apenas os deputados do Rio de Janeiro que são autores de proposições
+df_autores_rj = df[(df["siglaUf"] == "RJ") & (df["id"].isin(autores_proposicoes))]
 
-selected_deputado = st.selectbox("Selecione um deputado:", df_rio_de_janeiro["nome"])
+selected_deputado = st.selectbox("Selecione um deputado:", df_autores_rj["nome"])
 
-selected_deputado_info = df_rio_de_janeiro[df_rio_de_janeiro["nome"] == selected_deputado]
+selected_deputado_info = df_autores_rj[df_autores_rj["nome"] == selected_deputado]
 
 if not selected_deputado_info.empty:
     selected_deputado_info = selected_deputado_info.iloc[0]
@@ -47,8 +50,10 @@ if not selected_deputado_info.empty:
     st.write("Email: " + str(selected_deputado_info["email"]))
 
     st.header("Lista de Proposições do Deputado")
-    proposicoes = baixaProposicoesDeputado(selected_deputado_info["id"])
-    for proposta in proposicoes:
-        st.write("ID: ", proposta.get("id"))
-        st.write("Ementa: ", proposta.get("ementa"))
-        st.markdown("---")
+    deputado_proposicoes = autores_proposicoes.get(str(selected_deputado_info["id"]), [])
+    for proposta_id in deputado_proposicoes:
+        proposta = proposicoes.get(proposta_id)
+        if proposta:
+            st.write("ID: ", proposta_id)
+            st.write("Ementa: ", proposta.get("ementa"))
+            st.markdown("---")
