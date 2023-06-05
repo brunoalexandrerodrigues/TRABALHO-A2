@@ -20,13 +20,16 @@ def baixaProposicoesDeputado(idDeputado):
             pass
     return proposicoes
 
-def baixaProposicoesAno(ano):
-    url = f"https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-{ano}.json"
+def baixaFrentesDeputado(idDeputado):
+    url = f"https://dadosabertos.camara.leg.br/api/v2/deputados/{idDeputado}/frentes"
     r = requests.get(url)
+    frentes = []
     if r.status_code == 200:
-        return r.json()
-    else:
-        return []
+        try:
+            frentes = r.json()["dados"]
+        except KeyError:
+            pass
+    return frentes
 
 st.title("Lista de Deputados em Exercício")
 
@@ -57,13 +60,13 @@ if not selected_deputado_info.empty:
     st.header("Lista de Proposições do Deputado")
     proposicoes = baixaProposicoesDeputado(selected_deputado_info["id"])
     for proposta in proposicoes:
-        st.write("ID: ", proposta["id"])
-        st.write("Ementa: ", proposta["ementa"])
+        st.write("ID: ", proposta.get("id"))
+        st.write("Ementa: ", proposta.get("ementa"))
         st.markdown("---")
 
-    st.header("Lista de Proposições de 2023")
-    proposicoes_ano = baixaProposicoesAno(2023)
-    for proposta in proposicoes_ano:
-        st.write("ID: ", proposta["id"])
-        st.write("Ementa: ", proposta["ementa"])
+    st.header("Lista de Frentes Parlamentares do Deputado")
+    frentes = baixaFrentesDeputado(selected_deputado_info["id"])
+    for frente in frentes:
+        st.write("ID: ", frente.get("id"))
+        st.write("Nome: ", frente.get("nome"))
         st.markdown("---")
