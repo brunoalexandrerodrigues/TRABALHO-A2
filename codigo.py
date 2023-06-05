@@ -50,4 +50,3 @@ for index, row in df_deputados_rj_autores.iterrows():
     st.write(f"**ID do Deputado:** {row['idDeputadoAutor']}")
     st.write(f"**URI do Deputado:** {row['uriDeputado']}")
     st.write("---")
-
