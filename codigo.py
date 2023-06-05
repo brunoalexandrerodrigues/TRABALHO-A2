@@ -30,15 +30,13 @@ st.title("Lista de Deputados do Rio de Janeiro que são Autores de Proposições
 
 autores_proposicoes = baixaAutoresProposicoes()
 
-autores_proposicoes_rj = [autor for autor in autores_proposicoes if autor["dados"]["siglaUf"] == "RJ"]
-
-deputados_rj_ids = [autor["idAutor"] for autor in autores_proposicoes_rj]
+autores_proposicoes_rj = [autor["idAutor"] for autor in autores_proposicoes if autor["ufAutor"] == "RJ"]
 
 idLegislatura = 57  # Defina aqui o valor da legislatura desejada
 
 df = baixaDeputados(idLegislatura)
 
-df_deputados_rj_autores = df[df["id"].isin(deputados_rj_ids)]
+df_deputados_rj_autores = df[df["id"].isin(autores_proposicoes_rj)]
 
 selected_deputado = st.selectbox("Selecione um deputado:", df_deputados_rj_autores["nome"])
 
