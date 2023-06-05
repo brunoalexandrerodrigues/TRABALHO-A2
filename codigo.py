@@ -43,9 +43,8 @@ if not selected_deputado_info.empty:
     st.header('Lista de Proposições do Deputado')
     proposicoes = baixaProposicoes()
     for proposta in proposicoes:
-        autores = proposta['autores']
-        for autor in autores:
-            if autor['id'] == selected_deputado_info['id']:
-                st.write("ID: ", proposta["id"])
-                st.write("Ementa: ", proposta["ementa"])
-                st.markdown("---")
+        id_autor = proposta['idAutor']
+        if id_autor == selected_deputado_info['id']:
+            st.write("ID: ", proposta["id"])
+            st.write("Ementa: ", proposta["ementa"])
+            st.markdown("---")
