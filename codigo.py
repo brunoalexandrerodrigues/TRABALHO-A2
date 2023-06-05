@@ -8,6 +8,12 @@ def baixaAutoresProposicoes():
     autores_proposicoes = r.json()
     return autores_proposicoes
 
+def baixaProposicoes():
+    url = "https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json"
+    r = requests.get(url)
+    proposicoes = r.json()
+    return proposicoes
+
 def baixaDeputados(idLegislatura):
     url = f"https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura={idLegislatura}"
     r = requests.get(url)
@@ -15,49 +21,23 @@ def baixaDeputados(idLegislatura):
     df = pd.DataFrame(deputados)
     return df
 
-def baixaProposicoesDeputado(idDeputado):
-    url = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes?itens=100&autorId={idDeputado}&ordem=ASC&ordenarPor=id"
-    r = requests.get(url)
-    proposicoes = []
-    if r.status_code == 200:
-        try:
-            proposicoes = r.json()["dados"]
-        except KeyError:
-            pass
-    return proposicoes
-
-st.title("Lista de Deputados do Rio de Janeiro que são Autores de Proposições")
+st.title("Lista de Deputados do Rio de Janeiro e suas Ementas")
 
 autores_proposicoes = baixaAutoresProposicoes()
+proposicoes = baixaProposicoes()
+deputados = baixaDeputados(57)
 
-autores_proposicoes_rj = [autor["idAutor"] for autor in autores_proposicoes if autor["ufAutor"] == "RJ"]
+autores_proposicoes_rj = [autor for autor in autores_proposicoes if autor["siglaUFAutor"] == "RJ"]
 
-idLegislatura = 57  # Defina aqui o valor da legislatura desejada
+df_autores_proposicoes_rj = pd.DataFrame(autores_proposicoes_rj)
+df_proposicoes = pd.DataFrame(proposicoes)
 
-df = baixaDeputados(idLegislatura)
+df_deputados_rj_autores = pd.merge(df_autores_proposicoes_rj, df_deputados, left_on="idProposicao", right_on="id", how="inner")
 
-df_deputados_rj_autores = df[df["id"].isin(autores_proposicoes_rj)]
+df_final = pd.merge(df_deputados_rj_autores, df_proposicoes, left_on="idProposicao", right_on="id", how="inner")
 
-selected_deputado = st.selectbox("Selecione um deputado:", df_deputados_rj_autores["nome"])
-
-selected_deputado_info = df_deputados_rj_autores[df_deputados_rj_autores["nome"] == selected_deputado]
-
-if not selected_deputado_info.empty:
-    selected_deputado_info = selected_deputado_info.iloc[0]
-    st.markdown(
-        '<h2 style="background-color: #ff9900; padding: 10px; border-radius: 5px; color: #ffffff;">Detalhes do Deputado</h2>',
-        unsafe_allow_html=True,
-    )
-    st.image(selected_deputado_info["urlFoto"], width=130)
-    st.write("Nome: " + selected_deputado_info["nome"])
-    st.write("Partido: " + selected_deputado_info["siglaPartido"])
-    st.write("UF: " + selected_deputado_info["siglaUf"])
-    st.write("ID: " + str(selected_deputado_info["id"]))
-    st.write("Email: " + str(selected_deputado_info["email"]))
-
-    st.header("Lista de Proposições do Deputado")
-    proposicoes = baixaProposicoesDeputado(selected_deputado_info["id"])
-    for proposta in proposicoes:
-        st.write("ID: ", proposta["id"])
-        st.write("Ementa: ", proposta["ementa"])
-        st.markdown("---")
+for index, row in df_final.iterrows():
+    st.markdown(f"## {row['nomeAutor']} ({row['siglaPartidoAutor']})")
+    st.image(row['urlFoto'], width=200)
+    st.write(f"**Ementa:** {row['ementa']}")
+    st.markdown("---")
