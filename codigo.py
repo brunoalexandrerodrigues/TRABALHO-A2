@@ -12,7 +12,33 @@ def get_deputy_ementas(deputy_id):
     url = f"https://dadosabertos.camara.leg.br/api/v2/deputados/{deputy_id}/proposicoes?ordem=ASC&ordenarPor=id"
     response = requests.get(url)
     data = response.json()
-    ementas = [proposicao["ementa"] for proposicao in data["dados"]]
+    ementas = []
+
+    # Obtendo os autores das proposições
+    autores_url = "https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json"
+    autores_response = requests.get(autores_url)
+    autores_data = autores_response.json()
+    autores_dict = {proposicao["idProposicao"]: proposicao["nomeAutor"] for proposicao in autores_data}
+
+    # Obtendo os dados adicionais das ementas
+    ementas_url = "https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json"
+    ementas_response = requests.get(ementas_url)
+    ementas_data = ementas_response.json()
+    ementas_dict = {proposicao["id"]: proposicao for proposicao in ementas_data}
+
+    for proposicao in data["dados"]:
+        ementa = proposicao["ementa"]
+        id_proposicao = proposicao["id"]
+
+        # Obtendo o autor da proposição
+        autor = autores_dict.get(id_proposicao, "Autor Desconhecido")
+
+        # Obtendo os dados adicionais da ementa
+        ementa_detalhada = ementas_dict[id_proposicao]["ementaDetalhada"]
+        keywords = ementas_dict[id_proposicao]["keywords"]
+
+        ementas.append((ementa, autor, ementa_detalhada, keywords))
+
     return ementas
 
 # Configurações da aplicação Streamlit
@@ -30,7 +56,10 @@ if deputies:
     st.write("Nome:", selected_deputy["nome"])
     st.write("Partido:", selected_deputy["siglaPartido"])
     st.write("Ementas das Proposições:")
-    for ementa in ementas:
-        st.write("-", ementa)
+    for ementa, autor, ementa_detalhada, keywords in ementas:
+        st.write("- Autor:", autor)
+        st.write("  Ementa:", ementa)
+        st.write("  Ementa Detalhada:", ementa_detalhada)
+        st.write("  Palavras-chave:", keywords)
 else:
     st.write("Não foram encontrados deputados para o estado selecionado.")
