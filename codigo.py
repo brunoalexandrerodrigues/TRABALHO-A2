@@ -29,11 +29,8 @@ deputados = baixaDeputados(57)
 
 autores_proposicoes_rj = []
 for autor in autores_proposicoes:
-    if autor.get("dados", {}).get("siglaUFAutor") == "RJ":
-        id_autor = autor.get("idAutor")
-        deputado_rj = deputados[deputados["id"] == id_autor]
-        if not deputado_rj.empty:
-            autores_proposicoes_rj.append(autor)
+    if autor.get("siglaUFAutor") == "RJ":
+        autores_proposicoes_rj.append(autor)
 
 df_autores_proposicoes_rj = pd.DataFrame(autores_proposicoes_rj)
 df_proposicoes = pd.DataFrame(proposicoes)
