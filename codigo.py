@@ -27,12 +27,12 @@ autores_proposicoes = baixaAutoresProposicoes()
 proposicoes = baixaProposicoes()
 deputados = baixaDeputados(57)
 
-autores_proposicoes_rj = [autor for autor in autores_proposicoes if autor["siglaUFAutor"] == "RJ"]
+autores_proposicoes_rj = [autor for autor in autores_proposicoes if autor.get("siglaUFAutor") == "RJ"]
 
 df_autores_proposicoes_rj = pd.DataFrame(autores_proposicoes_rj)
 df_proposicoes = pd.DataFrame(proposicoes)
 
-df_deputados_rj_autores = pd.merge(df_autores_proposicoes_rj, df_deputados, left_on="idProposicao", right_on="id", how="inner")
+df_deputados_rj_autores = pd.merge(df_autores_proposicoes_rj, deputados, left_on="idAutor", right_on="id", how="inner")
 
 df_final = pd.merge(df_deputados_rj_autores, df_proposicoes, left_on="idProposicao", right_on="id", how="inner")
 
