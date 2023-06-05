@@ -49,5 +49,3 @@ if not selected_deputado_info.empty:
                 st.write("ID: ", proposta["id"])
                 st.write("Ementa: ", proposta["ementa"])
                 st.markdown("---")
-            else:
-                st.write("Não foram encontradas proposições.")
