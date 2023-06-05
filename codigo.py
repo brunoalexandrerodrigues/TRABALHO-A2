@@ -14,9 +14,13 @@ def baixaProposicoes():
     url = "https://dadosabertos.camara.leg.br/api/v2/proposicoes?ordem=ASC&ordenarPor=id"
     r = requests.get(url)
     if r.status_code == 200:
-        root = ET.fromstring(r.text)
-        proposicoes = root.findall(".//proposicoes/proposicao")
-        return proposicoes
+        try:
+            root = ET.Element("root")
+            root = ET.fromstring(r.content)
+            proposicoes = root.findall(".//proposicoes/proposicao")
+            return proposicoes
+        except ET.ParseError:
+            return []
     else:
         return []
 
