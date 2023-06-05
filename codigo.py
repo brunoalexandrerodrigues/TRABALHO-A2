@@ -1,23 +1,36 @@
-import pandas as pd
+import streamlit as st
 import requests
 
-# Obtendo os dados dos deputados do RJ
-url_deputados_rj = "https://dadosabertos.camara.leg.br/api/v2/deputados?siglaUf=RJ"
-response_deputados_rj = requests.get(url_deputados_rj)
-data_deputados_rj = response_deputados_rj.json()
-deputados_rj = pd.DataFrame(data_deputados_rj["dados"])
+def get_deputies_data(state):
+    url = f"https://dadosabertos.camara.leg.br/api/v2/deputados?siglaUf={state}&ordem=ASC&ordenarPor=nome"
+    response = requests.get(url)
+    data = response.json()
+    deputies = data["dados"]
+    return deputies
 
-# Obtendo os dados das proposições do RJ
-url_proposicoes_rj = "https://dadosabertos.camara.leg.br/api/v2/proposicoes?siglaUfAutor=RJ"
-response_proposicoes_rj = requests.get(url_proposicoes_rj)
-data_proposicoes_rj = response_proposicoes_rj.json()
-proposicoes_rj = pd.DataFrame(data_proposicoes_rj["dados"])
+def get_deputy_ementas(deputy_id):
+    url = f"https://dadosabertos.camara.leg.br/api/v2/deputados/{deputy_id}/proposicoes?ordem=ASC&ordenarPor=id"
+    response = requests.get(url)
+    data = response.json()
+    ementas = [proposicao["ementa"] for proposicao in data["dados"]]
+    return ementas
 
-# Filtrando as colunas desejadas do DataFrame de proposições
-df_autores_proposicoes_rj = proposicoes_rj[["id", "ementa"]]
+# Configurações da aplicação Streamlit
+st.title("Dados dos Deputados")
+state = st.selectbox("Selecione o estado", ["RJ", "SP", "MG"])  # Você pode adicionar mais estados aqui
 
-# Realizando a junção dos DataFrames
-df_deputados_rj_autores = pd.merge(df_autores_proposicoes_rj, deputados_rj, left_on="idDeputadoAutor", right_on="idDeputado", how="inner")
+deputies = get_deputies_data(state)
 
-# Exibindo o resultado
-df_deputados_rj_autores
+if deputies:
+    selected_deputy = st.selectbox("Selecione o deputado", deputies, format_func=lambda deputy: deputy["nome"])
+    deputy_id = selected_deputy["id"]
+    ementas = get_deputy_ementas(deputy_id)
+
+    st.subheader("Dados do Deputado")
+    st.write("Nome:", selected_deputy["nome"])
+    st.write("Partido:", selected_deputy["siglaPartido"])
+    st.write("Ementas das Proposições:")
+    for ementa in ementas:
+        st.write("-", ementa)
+else:
+    st.write("Não foram encontrados deputados para o estado selecionado.")
