@@ -1,52 +1,23 @@
-import streamlit as st
 import pandas as pd
 import requests
 
-def baixaAutoresProposicoes():
-    url = "https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json"
-    r = requests.get(url)
-    autores_proposicoes = r.json()
-    return autores_proposicoes
+# Obtendo os dados dos deputados do RJ
+url_deputados_rj = "https://dadosabertos.camara.leg.br/api/v2/deputados?siglaUf=RJ"
+response_deputados_rj = requests.get(url_deputados_rj)
+data_deputados_rj = response_deputados_rj.json()
+deputados_rj = pd.DataFrame(data_deputados_rj["dados"])
 
-def baixaProposicoes():
-    url = "https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json"
-    r = requests.get(url)
-    proposicoes = r.json()
-    return proposicoes
+# Obtendo os dados das proposições do RJ
+url_proposicoes_rj = "https://dadosabertos.camara.leg.br/api/v2/proposicoes?siglaUfAutor=RJ"
+response_proposicoes_rj = requests.get(url_proposicoes_rj)
+data_proposicoes_rj = response_proposicoes_rj.json()
+proposicoes_rj = pd.DataFrame(data_proposicoes_rj["dados"])
 
-def baixaDeputados(idLegislatura):
-    url = f"https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura={idLegislatura}"
-    r = requests.get(url)
-    deputados = r.json()["dados"]
-    df = pd.DataFrame(deputados)
-    return df
+# Filtrando as colunas desejadas do DataFrame de proposições
+df_autores_proposicoes_rj = proposicoes_rj[["id", "ementa"]]
 
-st.title("Lista de Deputados do Rio de Janeiro e suas Ementas")
+# Realizando a junção dos DataFrames
+df_deputados_rj_autores = pd.merge(df_autores_proposicoes_rj, deputados_rj, left_on="idDeputadoAutor", right_on="idDeputado", how="inner")
 
-autores_proposicoes = baixaAutoresProposicoes()
-proposicoes = baixaProposicoes()
-deputados = baixaDeputados(57)
-
-autores_proposicoes_rj = []
-for autor in autores_proposicoes:
-    if isinstance(autor, dict) and autor.get("siglaUFAutor") == "RJ":
-        id_deputado = autor.get("idDeputadoAutor")
-        deputado = next((d for d in deputados if d.get("id") == id_deputado), None)
-        if deputado is not None:
-            autor["ementa"] = deputado.get("ementa")
-            autor["uriDeputado"] = deputado.get("uri")
-            autores_proposicoes_rj.append(autor)
-
-df_autores_proposicoes_rj = pd.DataFrame(autores_proposicoes_rj)
-
-deputados_rj = deputados[deputados['siglaUf'] == 'RJ']
-
-df_deputados_rj_autores = pd.merge(df_autores_proposicoes_rj, deputados_rj, left_on="idDeputadoAutor", right_on="id", how="inner")
-
-for index, row in df_deputados_rj_autores.iterrows():
-    st.markdown(f"## {row['nomeAutor']} ({row['siglaPartidoAutor']})")
-    st.image(row['urlFoto'], width=200)
-    st.write(f"**Ementa:** {row['ementa']}")
-    st.write(f"**ID do Deputado:** {row['idDeputadoAutor']}")
-    st.write(f"**URI do Deputado:** {row['uriDeputado']}")
-    st.write("---")
+# Exibindo o resultado
+df_deputados_rj_autores
