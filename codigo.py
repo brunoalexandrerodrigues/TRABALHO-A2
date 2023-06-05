@@ -20,6 +20,17 @@ def baixaProposicoesDeputado(idDeputado):
             pass
     return proposicoes
 
+def baixaFrentesParlamentares(idDeputado):
+    url = f"https://dadosabertos.camara.leg.br/api/v2/deputados/{idDeputado}/frentes"
+    r = requests.get(url)
+    frentes = []
+    if r.status_code == 200:
+        try:
+            frentes = r.json()["dados"]
+        except KeyError:
+            pass
+    return frentes
+
 def baixaTiposProposicao():
     url = "https://dadosabertos.camara.leg.br/api/v2/referencias/tiposProposicao"
     r = requests.get(url)
@@ -62,6 +73,13 @@ if not selected_deputado_info.empty:
     for proposta in proposicoes:
         st.write("ID: ", proposta["id"])
         st.write("Ementa: ", proposta["ementa"])
+        st.markdown("---")
+
+    st.header("Frentes Parlamentares do Deputado")
+    frentes = baixaFrentesParlamentares(selected_deputado_info["id"])
+    for frente in frentes:
+        st.write("ID: ", frente["id"])
+        st.write("Título: ", frente["titulo"])
         st.markdown("---")
 
     st.header("Tipos de Proposição")
