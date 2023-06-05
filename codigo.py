@@ -46,4 +46,8 @@ if not selected_deputado_info.empty:
     st.header('Lista de Proposições do Deputado')
     id_deputado = selected_deputado_info['id']
     df_proposicoes = baixaProposicoesDeputado(id_deputado)
-    st.dataframe(df_proposicoes[['id', 'ementa']])
+    
+    if not df_proposicoes.empty:
+        st.dataframe(df_proposicoes[['id', 'ementa']])
+    else:
+        st.write('Nenhuma proposição encontrada para este deputado.')
