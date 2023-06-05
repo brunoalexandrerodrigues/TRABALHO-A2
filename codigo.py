@@ -1,8 +1,8 @@
 import streamlit as st
 import requests
 
-def get_deputies_data(state):
-    url = f"https://dadosabertos.camara.leg.br/api/v2/deputados?siglaUf={state}&ordem=ASC&ordenarPor=nome"
+def get_deputies_data():
+    url = "https://dadosabertos.camara.leg.br/api/v2/deputados?siglaUf=RJ&ordem=ASC&ordenarPor=nome"
     response = requests.get(url)
     data = response.json()
     deputies = data["dados"]
@@ -42,10 +42,9 @@ def get_deputy_ementas(deputy_id):
     return ementas
 
 # Configurações da aplicação Streamlit
-st.title("Dados dos Deputados")
-state = st.selectbox("Selecione o estado", ["RJ", "SP", "MG"])  # Você pode adicionar mais estados aqui
+st.title("Dados dos Deputados do RJ")
 
-deputies = get_deputies_data(state)
+deputies = get_deputies_data()
 
 if deputies:
     selected_deputy = st.selectbox("Selecione o deputado", deputies, format_func=lambda deputy: deputy["nome"])
@@ -62,4 +61,4 @@ if deputies:
         st.write("  Ementa Detalhada:", ementa_detalhada)
         st.write("  Palavras-chave:", keywords)
 else:
-    st.write("Não foram encontrados deputados para o estado selecionado.")
+    st.write("Não foram encontrados deputados do RJ.")
