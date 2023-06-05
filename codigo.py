@@ -64,9 +64,12 @@ if not selected_deputado_info.empty:
         st.write("Ementa: ", proposta["ementa"])
         st.markdown("---")
 
-st.header("Tipos de Proposição")
-tipos_proposicao = baixaTiposProposicao()
-for tipo in tipos_proposicao:
-    st.write("ID: ", tipo["id"])
-    st.write("Descrição: ", tipo["descricao"])
-    st.markdown("---")
+    st.header("Tipos de Proposição")
+    tipos_proposicao = baixaTiposProposicao()
+    for tipo in tipos_proposicao:
+        tipo_id = tipo.get("id")
+        tipo_descricao = tipo.get("descricao")
+        if tipo_id is not None and tipo_descricao is not None:
+            st.write("ID: ", tipo_id)
+            st.write("Descrição: ", tipo_descricao)
+            st.markdown("---")
