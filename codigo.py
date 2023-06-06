@@ -18,13 +18,13 @@ def get_deputy_ementas(deputy_id):
     autores_url = "https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json"
     autores_response = requests.get(autores_url)
     autores_data = autores_response.json()
-    autores_dict = {proposicao["idProposicao"]: proposicao["nomeAutor"] for proposicao in autores_data}
+    autores_dict = {proposicao["idProposicao"]: proposicao["nomeAutor"] for proposicao in autores_data["dados"]}
 
     # Obtendo os dados adicionais das ementas
     ementas_url = "https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json"
     ementas_response = requests.get(ementas_url)
     ementas_data = ementas_response.json()
-    ementas_dict = {proposicao["id"]: proposicao for proposicao in ementas_data}
+    ementas_dict = {proposicao["id"]: proposicao for proposicao in ementas_data["dados"]}
 
     for proposicao in data["dados"]:
         ementa = proposicao["ementa"]
