@@ -1,75 +1,52 @@
 import streamlit as st
-import pandas as pd
 import requests
 
-def baixaDeputados(idLegislatura):
-    url = 'https://dadosabertos.camara.leg.br/api/v2/deputados?idLegislatura=' + str(idLegislatura)
-    r = requests.get(url)
-    deputados = r.json()['dados']
-    df = pd.DataFrame(deputados)
-    return df
+def get_deputies_data():
+    url = "https://dadosabertos.camara.leg.br/api/v2/deputados?siglaUf=RJ&ordem=ASC&ordenarPor=nome"
+    response = requests.get(url)
+    data = response.json()
+    deputies = data["dados"]
+    return deputies
 
-def obterDespesasDeputado(idDeputado):
-    url = 'https://dadosabertos.camara.leg.br/api/v2/deputados/' + str(idDeputado) + '/despesas'
-    r = requests.get(url)
-    despesas = r.json()['dados']
-    df = pd.DataFrame(despesas)
-    return df
+def get_deputy_proposals(deputy_id):
+    url = f"https://dadosabertos.camara.leg.br/api/v2/deputados/{deputy_id}/proposicoes?ordem=ASC&ordenarPor=id"
+    response = requests.get(url)
+    data = response.json()
+    proposals = []
 
-def obterProposicoesDeputado(idDeputado):
-    url = 'https://dadosabertos.camara.leg.br/api/v2/deputados/' + str(idDeputado) + '/proposicoes'
-    r = requests.get(url)
-    proposicoes = r.json()['dados']
-    df = pd.DataFrame(proposicoes)
-    return df
+    if "dados" in data:
+        for proposal in data["dados"]:
+            proposal_id = proposal["id"]
+            ementa_url = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{proposal_id}"
+            ementa_response = requests.get(ementa_url)
+            ementa_data = ementa_response.json()
+            ementa = ementa_data["dados"]["ementa"]
+            sigla_tipo = ementa_data["dados"]["siglaTipo"]
 
-st.title('Lista de Deputados em Exercício')
+            proposals.append((proposal_id, sigla_tipo, ementa))
 
-idLegislatura = st.slider('Escolha de qual legislatura você quer a lista de deputados', 50, 57, 57)
+    return proposals
 
-df = baixaDeputados(idLegislatura)
+# Configurações da aplicação Streamlit
+st.title("Lista de Deputados do Rio de Janeiro")
 
-st.header('Lista de deputados')
-st.write(df)
-st.download_button('Baixar lista de deputados', data=df.to_csv(), file_name='deputados.csv', mime='text/csv')
+deputies = get_deputies_data()
 
-st.header('Gráficos')
-st.subheader('Número de deputados por partido')
-st.bar_chart(df['siglaPartido'].value_counts())
-st.subheader('Número de deputados por estado')
-st.bar_chart(df['siglaUf'].value_counts())
-
-st.header('Lista de deputados por estado')
-coluna1, coluna2 = st.columns(2)
-estado = coluna1.selectbox('Escolha um estado', sorted(df['siglaUf'].unique()), index=25)
-partido = coluna2.selectbox('Escolha um partido', sorted(df['siglaPartido'].unique()))
-df2 = df[(df['siglaUf'] == estado) & (df['siglaPartido'] == partido)]
-st.markdown('---')
-
-if df2.empty:
-    st.subheader(':no_entry_sign: Sem deputados nesse estado filiados a esse partido! :crying_cat_face:')
+if deputies:
+    for deputy in deputies:
+        with st.expander(deputy["nome"]):
+            st.write("Nome:", deputy["nome"])
+            st.write("Partido:", deputy["siglaPartido"])
+            st.write("UF:", deputy["siglaUf"])
+            st.write("ID:", deputy["id"])
+            st.write("Email:", deputy["email"])
+            st.write("---")
+            st.write("Proposições:")
+            proposals = get_deputy_proposals(deputy["id"])
+            for proposal_id, sigla_tipo, ementa in proposals:
+                st.write("ID da Proposição:", proposal_id)
+                st.write("Sigla do Tipo:", sigla_tipo)
+                st.write("Ementa:", ementa)
+                st.write("---")
 else:
-    total_despesas_partido = 0
-    for index, linha in df2.iterrows():
-        with st.expander(linha['nome']):
-            st.image(linha['urlFoto'], width=130)
-            st.write('Nome: ' + linha['nome'])
-            st.write('Partido: ' + linha['siglaPartido'])
-            st.write('UF: ' + linha['siglaUf'])
-            st.write('ID: ' + str(linha['id']))
-            st.write('Email: ' + str(linha['email']))
-            st.write('---')
-            st.write('Despesas:')
-            despesas_df = obterDespesasDeputado(linha['id'])
-            st.write(despesas_df)
-            total_despesas_deputado = despesas_df['valorLiquido'].sum()
-            st.markdown(f'<h2 style="color:red;">Total de Despesas do Deputado: R${total_despesas_deputado:.2f}</h2>', unsafe_allow_html=True)
-            total_despesas_partido += total_despesas_deputado
-
-            st.write('Proposições:')
-            proposicoes_df = obterProposicoesDeputado(linha['id'])
-            st.write(proposicoes_df[['ementa', 'id', 'ementaDetalhada', 'keywords']])
-            st.markdown('---')
-
-    st.subheader('Total de Despesas do Partido')
-    st.markdown(f'<h2 style="color:red;">R${total_despesas_partido:.2f}</h2>', unsafe_allow_html=True)
+    st.write("Nenhum deputado encontrado para o estado do RJ.")
