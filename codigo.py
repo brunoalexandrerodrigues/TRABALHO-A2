@@ -26,17 +26,17 @@ def get_deputy_ementas(deputy_id):
             id_proposicao = proposicao["id"]
 
             # Obtendo os autores das proposições
-            autores_url = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{id_proposicao}"
+            autores_url = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{id_proposicao}/autores"
             autores_response = requests.get(autores_url)
             autores_data = autores_response.json()
-            autores_dict = {proposicao["idProposicao"]: proposicao["nomeAutor"] for proposicao in autores_data["dados"]["autores"]}
+            autores_dict = {proposicao["idProposicao"]: proposicao["nome"] for proposicao in autores_data["dados"]}
 
             # Obtendo o autor da proposição
             autor = autores_dict.get(id_proposicao, "Autor Desconhecido")
 
             # Obtendo os dados adicionais da ementa
             ementa_detalhada = ementas_dict[id_proposicao].get("ementaDetalhada", "")
-            keywords = ementas_dict[id_proposicao].get("keywords", "")
+            keywords = ementas_dict[id_proposicao].get("keywords", [])
 
             ementas.append((ementa, autor, ementa_detalhada, keywords))
 
@@ -55,12 +55,11 @@ if deputies:
     st.subheader("Dados do Deputado")
     st.write("Nome:", selected_deputy["nome"])
     st.write("Partido:", selected_deputy["siglaPartido"])
-    st.write("Proposições dos Deputados:")
+    st.write("Ementas das Proposições:")
     for ementa, autor, ementa_detalhada, keywords in ementas:
         st.write("- Autor:", autor)
         st.write("  Ementa:", ementa)
         st.write("  Ementa Detalhada:", ementa_detalhada)
-        st.write("  Palavras-chave:", keywords)
+        st.write("  Palavras-chave:", ", ".join(keywords))
 else:
-    st.write("Não foram encontrados deputados do RJ.")
-
+    st.write("Nenhum deputado encontrado para o estado do RJ.")
