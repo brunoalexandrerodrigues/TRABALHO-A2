@@ -15,7 +15,6 @@ def scrape_proposals(url_proposals, url_proposal_authors):
 
         for author in data_proposal_authors['dados']:
             if author['idProposicao'] == id_proposal:
-                deputy_id = author['id']
                 tipo_autor = author['tipoAutor']
                 nome_autor = author['nomeAutor']
                 sigla_partido_autor = author['siglaPartidoAutor']
@@ -23,7 +22,6 @@ def scrape_proposals(url_proposals, url_proposal_authors):
 
                 proposals.append({
                     'idProposicao': id_proposal,
-                    'idDeputado': deputy_id,
                     'tipoAutor': tipo_autor,
                     'nomeAutor': nome_autor,
                     'siglaPartidoAutor': sigla_partido_autor,
@@ -46,7 +44,6 @@ st.title('Proposições dos Deputados do RJ')
 for proposal in proposals_rj:
     st.write('---')
     st.write('ID da Proposição:', proposal['idProposicao'])
-    st.write('ID do Deputado:', proposal['idDeputado'])
     st.write('Tipo do Autor:', proposal['tipoAutor'])
     st.write('Nome do Autor:', proposal['nomeAutor'])
     st.write('Sigla do Partido do Autor:', proposal['siglaPartidoAutor'])
