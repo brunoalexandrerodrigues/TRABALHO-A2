@@ -1,93 +1,53 @@
-import streamlit as st
 import requests
-
-def scrape_deputies(url_deputies):
-    response_deputies = requests.get(url_deputies)
-    data_deputies = response_deputies.json()
-
-    deputies = {}
-
-    for item in data_deputies['dados']:
-        if item['siglaUf'] == 'RJ':
-            deputy_id = item['id']
-            deputies[deputy_id] = {
-                'nome': item['nome'],
-                'siglaPartido': item['siglaPartido'],
-                'siglaUF': item['siglaUf']
-            }
-
-    return deputies
+import streamlit as st
 
 def scrape_proposals(url_proposals, url_proposal_authors):
     response_proposals = requests.get(url_proposals)
-    data_proposals = response_proposals.json()
-
     response_proposal_authors = requests.get(url_proposal_authors)
+
+    data_proposals = response_proposals.json()
     data_proposal_authors = response_proposal_authors.json()
 
-    proposals = {}
+    proposals = []
 
-    for item in data_proposals['dados']:
-        proposal_id = item['id']
-        proposals[proposal_id] = {
-            'descricaoTipo': item.get('descricaoTipo', ''),
-            'ementa': item.get('ementa', ''),
-            'ementaDetalhada': item.get('ementaDetalhada', '')
-        }
+    for proposal in data_proposals['dados']:
+        id_proposal = proposal['id']
 
-    for item in data_proposal_authors['dados']:
-        proposal_id = item['idProposicao']
-        deputy_id = item['id']
-        if deputy_id in deputies:
-            if 'autores' not in proposals[proposal_id]:
-                proposals[proposal_id]['autores'] = []
-            author = {
-                'tipoAutor': item.get('tipoAutor', ''),
-                'nomeAutor': item.get('nomeAutor', ''),
-                'siglaPartidoAutor': item.get('siglaPartidoAutor', ''),
-                'siglaUFAutor': item.get('siglaUFAutor', '')
-            }
-            proposals[proposal_id]['autores'].append(author)
+        for author in data_proposal_authors['dados']:
+            if author['idProposicao'] == id_proposal:
+                deputy_id = author['id']
+                tipo_autor = author['tipoAutor']
+                nome_autor = author['nomeAutor']
+                sigla_partido_autor = author['siglaPartidoAutor']
+                sigla_uf_autor = author['siglaUFAutor']
+
+                proposals.append({
+                    'idProposicao': id_proposal,
+                    'idDeputado': deputy_id,
+                    'tipoAutor': tipo_autor,
+                    'nomeAutor': nome_autor,
+                    'siglaPartidoAutor': sigla_partido_autor,
+                    'siglaUFAutor': sigla_uf_autor
+                })
 
     return proposals
 
-# Configurações da aplicação Streamlit
-st.title("Informações das Proposições e Autores")
-
-# URLs para a raspagem dos dados
-url_deputies = 'https://dadosabertos.camara.leg.br/api/v2/deputados'
 url_proposals = 'https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json'
 url_proposal_authors = 'https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json'
 
-# Realiza a raspagem dos dados
-deputies = scrape_deputies(url_deputies)
 proposals = scrape_proposals(url_proposals, url_proposal_authors)
 
-# Filtra apenas as proposições dos deputados do RJ
-filtered_proposals = {
-    proposal_id: proposal
-    for proposal_id, proposal in proposals.items()
-    if any(author['siglaUFAutor'] == 'RJ' for author in proposal.get('autores', []))
-}
+# Filtrando apenas os deputados do RJ
+proposals_rj = [proposal for proposal in proposals if proposal['siglaUFAutor'] == 'RJ']
 
-# Exibe os dados no Streamlit
-st.header("Deputados do RJ")
-for deputy_id, deputy in deputies.items():
-    st.subheader(deputy['nome'])
-    st.write("Partido:", deputy['siglaPartido'])
-    st.write("UF:", deputy['siglaUF'])
-    st.markdown("---")
+# Exibindo os dados no Streamlit
+st.title('Proposições dos Deputados do RJ')
 
-st.header("Proposições dos Deputados do RJ")
-for proposal_id, proposal in filtered_proposals.items():
-    st.subheader(f"Proposição ID: {proposal_id}")
-    st.write("Tipo de Proposição:", proposal['descricaoTipo'])
-    st.write("Ementa:", proposal['ementa'])
-    st.write("Ementa Detalhada:", proposal['ementaDetalhada'])
-    st.subheader("Autores:")
-    for author in proposal.get('autores', []):
-        st.write("Tipo de Autor:", author['tipoAutor'])
-        st.write("Nome do Autor:", author['nomeAutor'])
-        st.write("Partido do Autor:", author['siglaPartidoAutor'])
-        st.write("UF do Autor:", author['siglaUFAutor'])
-        st.markdown("---")
+for proposal in proposals_rj:
+    st.write('---')
+    st.write('ID da Proposição:', proposal['idProposicao'])
+    st.write('ID do Deputado:', proposal['idDeputado'])
+    st.write('Tipo do Autor:', proposal['tipoAutor'])
+    st.write('Nome do Autor:', proposal['nomeAutor'])
+    st.write('Sigla do Partido do Autor:', proposal['siglaPartidoAutor'])
+    st.write('Sigla do Estado do Autor:', proposal['siglaUFAutor'])
