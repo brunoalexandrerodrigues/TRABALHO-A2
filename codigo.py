@@ -15,10 +15,10 @@ def get_deputy_ementas(deputy_id):
     ementas = []
 
     # Obtendo os autores das proposições
-    autores_url = "https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json"
+    autores_url = "https://dadosabertos.camara.leg.br/api/v2/deputados/{deputy_id}/proposicoes?ordem=ASC&ordenarPor=id"
     autores_response = requests.get(autores_url)
     autores_data = autores_response.json()
-    autores_dict = {proposicao["idProposicao"]: proposicao["nomeAutor"] for proposicao in autores_data}
+    autores_dict = {proposicao["id"]: proposicao["nomeAutor"] for proposicao in autores_data}
 
     # Obtendo os dados adicionais das ementas
     ementas_url = "https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json"
