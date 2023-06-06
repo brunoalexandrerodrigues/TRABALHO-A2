@@ -18,26 +18,27 @@ def get_deputy_ementas(deputy_id):
     autores_url = "https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json"
     autores_response = requests.get(autores_url)
     autores_data = autores_response.json()
-    autores_dict = {proposicao["idProposicao"]: proposicao["nomeAutor"] for proposicao in autores_data["dados"]}
+    autores_dict = {proposicao["idProposicao"]: proposicao["nomeAutor"] for proposicao in autores_data}
 
     # Obtendo os dados adicionais das ementas
     ementas_url = "https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json"
     ementas_response = requests.get(ementas_url)
     ementas_data = ementas_response.json()
-    ementas_dict = {proposicao["id"]: proposicao for proposicao in ementas_data["dados"]}
+    ementas_dict = {proposicao["id"]: proposicao for proposicao in ementas_data}
 
-    for proposicao in data["dados"]:
-        ementa = proposicao["ementa"]
-        id_proposicao = proposicao["id"]
+    if "dados" in data:
+        for proposicao in data["dados"]:
+            ementa = proposicao["ementa"]
+            id_proposicao = proposicao["id"]
 
-        # Obtendo o autor da proposição
-        autor = autores_dict.get(id_proposicao, "Autor Desconhecido")
+            # Obtendo o autor da proposição
+            autor = autores_dict.get(id_proposicao, "Autor Desconhecido")
 
-        # Obtendo os dados adicionais da ementa
-        ementa_detalhada = ementas_dict[id_proposicao].get("ementaDetalhada", "")
-        keywords = ementas_dict[id_proposicao].get("keywords", "")
+            # Obtendo os dados adicionais da ementa
+            ementa_detalhada = ementas_dict[id_proposicao].get("ementaDetalhada", "")
+            keywords = ementas_dict[id_proposicao].get("keywords", "")
 
-        ementas.append((ementa, autor, ementa_detalhada, keywords))
+            ementas.append((ementa, autor, ementa_detalhada, keywords))
 
     return ementas
 
