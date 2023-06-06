@@ -20,7 +20,7 @@ def get_deputy_ementas(deputy_id):
     autores_data = autores_response.json()
     autores_dict = {}
     for proposicao in autores_data:
-        autor = proposicao.get("nomeAutor") or "Autor Desconhecido"
+        autor = proposicao.get("nomeAutor", "Autor Desconhecido")
         autores_dict[proposicao["idProposicao"]] = autor
 
     # Obtendo os dados adicionais das ementas
