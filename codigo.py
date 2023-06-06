@@ -8,33 +8,60 @@ def get_deputies_data():
     deputies = data["dados"]
     return deputies
 
-def get_deputies_list(deputies):
-    deputies_list = [deputy["nome"] for deputy in deputies]
-    return deputies_list
+def get_deputy_ementas(deputy_id):
+    url = f"https://dadosabertos.camara.leg.br/api/v2/deputados/{deputy_id}/proposicoes?ordem=ASC&ordenarPor=id"
+    response = requests.get(url)
+    data = response.json()
+    ementas = []
 
-def get_deputies_by_party(deputies):
-    party_counts = {}
-    for deputy in deputies:
-        party = deputy["siglaPartido"]
-        if party in party_counts:
-            party_counts[party] += 1
-        else:
-            party_counts[party] = 1
-    return party_counts
+    # Obtendo os dados adicionais das ementas
+    ementas_url = "https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json"
+    ementas_response = requests.get(ementas_url)
+    ementas_data = ementas_response.json()
+    ementas_dict = {proposicao["id"]: proposicao for proposicao in ementas_data["dados"]}
+
+    if "dados" in data:
+        for proposicao in data["dados"]:
+            ementa = proposicao["ementa"]
+            id_proposicao = proposicao["id"]
+
+            # Obtendo os autores das proposições
+            autores_url = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{id_proposicao}"
+            autores_response = requests.get(autores_url)
+            autores_data = autores_response.json()
+            autores_dict = {proposicao["idProposicao"]: proposicao["nomeAutor"] for proposicao in autores_data["dados"]["autores"]}
+
+            # Obtendo o autor da proposição
+            autor = autores_dict.get(id_proposicao, "Autor Desconhecido")
+
+            # Obtendo os dados adicionais da ementa
+            ementa_detalhada = ementas_dict[id_proposicao].get("ementaDetalhada", "")
+            keywords = ementas_dict[id_proposicao].get("keywords", "")
+
+            ementas.append((ementa, autor, ementa_detalhada, keywords))
+
+    return ementas
 
 # Configurações da aplicação Streamlit
-st.title("Lista de Deputados do Rio de Janeiro")
+st.title("Dados dos Deputados do RJ")
 
 deputies = get_deputies_data()
 
-show_deputies_list = st.button("Mostrar lista de deputados")
+if deputies:
+    selected_deputy = st.selectbox("Selecione o deputado", deputies, format_func=lambda deputy: deputy["nome"])
+    deputy_id = selected_deputy["id"]
+    ementas = get_deputy_ementas(deputy_id)
 
-if show_deputies_list:
-    deputies_list = get_deputies_list(deputies)
-    st.write("Lista de Deputados do RJ:")
-    for deputy_name in deputies_list:
-        st.write(deputy_name)
+    st.subheader("Dados do Deputado")
+    st.write("Nome:", selected_deputy["nome"])
+    st.write("Partido:", selected_deputy["siglaPartido"])
+    st.write("Proposições dos Deputados:")
+    for ementa, autor, ementa_detalhada, keywords in ementas:
+        st.write("- Autor:", autor)
+        st.write("  Ementa:", ementa)
+        st.write("  Ementa Detalhada:", ementa_detalhada)
+        st.write("  Palavras-chave:", keywords)
+else:
+    st.write("Não foram encontrados deputados do RJ.")
 
-party_counts = get_deputies_by_party(deputies)
-st.subheader("Número de deputados por partido")
-st.bar_chart(party_counts)
+
