@@ -22,14 +22,9 @@ def scrape_proposals(url_proposals, url_proposal_authors):
                 sigla_uf_autor = author['siglaUFAutor']
 
                 if nome_autor not in proposals:
-                    proposals[nome_autor] = []
+                    proposals[nome_autor] = set()
 
-                proposals[nome_autor].append({
-                    'idProposicao': id_proposal,
-                    'tipoAutor': tipo_autor,
-                    'siglaPartidoAutor': sigla_partido_autor,
-                    'siglaUFAutor': sigla_uf_autor
-                })
+                proposals[nome_autor].add((id_proposal, tipo_autor, sigla_partido_autor, sigla_uf_autor))
 
     return proposals
 
@@ -47,7 +42,7 @@ url_proposal_authors = 'https://dadosabertos.camara.leg.br/arquivos/proposicoesA
 proposals = scrape_proposals(url_proposals, url_proposal_authors)
 
 # Filtrando apenas os deputados do RJ
-proposals_rj = {author: data for author, data in proposals.items() if data[0]['siglaUFAutor'] == 'RJ'}
+proposals_rj = {author: data for author, data in proposals.items() if data[0][3] == 'RJ'}
 
 # Exibindo os dados no Streamlit
 st.title('Proposições dos Deputados do RJ')
@@ -60,13 +55,16 @@ selected_deputy = st.selectbox('Selecione o deputado', deputies)
 st.subheader('Dados do Deputado')
 data_deputy = proposals_rj[selected_deputy]
 st.write('Nome:', selected_deputy)
-st.write('Partido:', data_deputy[0]['siglaPartidoAutor'])
+st.write('Partido:', data_deputy[0][2])
 
 # Proposições do deputado selecionado
 st.subheader('Proposições')
+proposals_set = set()
 for proposal in data_deputy:
-    url_proposal = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{proposal['idProposicao']}"
-    st.write(f"[Proposição {proposal['idProposicao']}]({url_proposal})")
+    if proposal[0] not in proposals_set:
+        proposals_set.add(proposal[0])
+        url_proposal = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{proposal[0]}"
+        st.write(f"[Proposição {proposal[0]}] - {proposal[1]}")
 
 # Gráfico de número de proposições por deputado
 proposal_counts = count_proposals(proposals_rj)
