@@ -8,7 +8,7 @@ def scrape_proposals(url_proposals, url_proposal_authors):
     data_proposals = response_proposals.json()
     data_proposal_authors = response_proposal_authors.json()
 
-    proposals = []
+    proposals = {}
 
     for proposal in data_proposals['dados']:
         id_proposal = proposal['id']
@@ -20,10 +20,12 @@ def scrape_proposals(url_proposals, url_proposal_authors):
                 sigla_partido_autor = author['siglaPartidoAutor']
                 sigla_uf_autor = author['siglaUFAutor']
 
-                proposals.append({
+                if nome_autor not in proposals:
+                    proposals[nome_autor] = []
+
+                proposals[nome_autor].append({
                     'idProposicao': id_proposal,
                     'tipoAutor': tipo_autor,
-                    'nomeAutor': nome_autor,
                     'siglaPartidoAutor': sigla_partido_autor,
                     'siglaUFAutor': sigla_uf_autor
                 })
@@ -36,15 +38,18 @@ url_proposal_authors = 'https://dadosabertos.camara.leg.br/arquivos/proposicoesA
 proposals = scrape_proposals(url_proposals, url_proposal_authors)
 
 # Filtrando apenas os deputados do RJ
-proposals_rj = [proposal for proposal in proposals if proposal['siglaUFAutor'] == 'RJ']
+proposals_rj = {author: data for author, data in proposals.items() if data[0]['siglaUFAutor'] == 'RJ'}
 
 # Exibindo os dados no Streamlit
 st.title('Proposições dos Deputados do RJ')
 
-for proposal in proposals_rj:
+for author, data in proposals_rj.items():
     st.write('---')
-    st.write('ID da Proposição:', proposal['idProposicao'])
-    st.write('Tipo do Autor:', proposal['tipoAutor'])
-    st.write('Nome do Autor:', proposal['nomeAutor'])
-    st.write('Sigla do Partido do Autor:', proposal['siglaPartidoAutor'])
-    st.write('Sigla do Estado do Autor:', proposal['siglaUFAutor'])
+    st.subheader('Autor')
+    st.write('Nome:', author)
+    st.write('Partido:', data[0]['siglaPartidoAutor'])
+
+    st.subheader('Proposições')
+    for proposal in data:
+        url_proposal = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{proposal['idProposicao']}"
+        st.write(f"[Proposição {proposal['idProposicao']}]({url_proposal})")
