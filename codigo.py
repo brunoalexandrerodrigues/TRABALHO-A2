@@ -8,45 +8,33 @@ def get_deputies_data():
     deputies = data["dados"]
     return deputies
 
-def get_deputy_proposals(deputy_id):
-    url = f"https://dadosabertos.camara.leg.br/api/v2/deputados/{deputy_id}/proposicoes?ordem=ASC&ordenarPor=id"
-    response = requests.get(url)
-    data = response.json()
-    proposals = []
+def get_deputies_list(deputies):
+    deputies_list = [deputy["nome"] for deputy in deputies]
+    return deputies_list
 
-    if "dados" in data:
-        for proposal in data["dados"]:
-            proposal_id = proposal["id"]
-            ementa_url = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{proposal_id}"
-            ementa_response = requests.get(ementa_url)
-            ementa_data = ementa_response.json()
-            ementa = ementa_data["dados"]["ementa"]
-            sigla_tipo = ementa_data["dados"]["siglaTipo"]
-
-            proposals.append((proposal_id, sigla_tipo, ementa))
-
-    return proposals
+def get_deputies_by_party(deputies):
+    party_counts = {}
+    for deputy in deputies:
+        party = deputy["siglaPartido"]
+        if party in party_counts:
+            party_counts[party] += 1
+        else:
+            party_counts[party] = 1
+    return party_counts
 
 # Configurações da aplicação Streamlit
 st.title("Lista de Deputados do Rio de Janeiro")
 
 deputies = get_deputies_data()
 
-if deputies:
-    for deputy in deputies:
-        with st.expander(deputy["nome"]):
-            st.write("Nome:", deputy["nome"])
-            st.write("Partido:", deputy["siglaPartido"])
-            st.write("UF:", deputy["siglaUf"])
-            st.write("ID:", deputy["id"])
-            st.write("Email:", deputy["email"])
-            st.write("---")
-            st.write("Proposições:")
-            proposals = get_deputy_proposals(deputy["id"])
-            for proposal_id, sigla_tipo, ementa in proposals:
-                st.write("ID da Proposição:", proposal_id)
-                st.write("Sigla do Tipo:", sigla_tipo)
-                st.write("Ementa:", ementa)
-                st.write("---")
-else:
-    st.write("Nenhum deputado encontrado para o estado do RJ.")
+show_deputies_list = st.button("Mostrar lista de deputados")
+
+if show_deputies_list:
+    deputies_list = get_deputies_list(deputies)
+    st.write("Lista de Deputados do RJ:")
+    for deputy_name in deputies_list:
+        st.write(deputy_name)
+
+party_counts = get_deputies_by_party(deputies)
+st.subheader("Número de deputados por partido")
+st.bar_chart(party_counts)
