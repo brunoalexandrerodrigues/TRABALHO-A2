@@ -55,7 +55,7 @@ if deputies:
     st.subheader("Dados do Deputado")
     st.write("Nome:", selected_deputy["nome"])
     st.write("Partido:", selected_deputy["siglaPartido"])
-    st.write("Ementas das Proposições:")
+    st.write("Proposições dos Deputados:")
     for ementa, autor, ementa_detalhada, keywords in ementas:
         st.write("- Autor:", autor)
         st.write("  Ementa:", ementa)
