@@ -1,67 +1,62 @@
 import streamlit as st
 import requests
 
-def get_deputies_data():
-    url = "https://dadosabertos.camara.leg.br/api/v2/deputados?siglaUf=RJ&ordem=ASC&ordenarPor=nome"
+def scrape_proposicoes_autores():
+    url = 'https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json'
     response = requests.get(url)
     data = response.json()
-    deputies = data["dados"]
-    return deputies
 
-def get_deputy_ementas(deputy_id):
-    url = f"https://dadosabertos.camara.leg.br/api/v2/deputados/{deputy_id}/proposicoes?ordem=ASC&ordenarPor=id"
+    autores = []
+    for item in data['dados']:
+        descricao_tipo = item.get('descricaoTipo', '')
+        ementa = item.get('ementa', '')
+        ementa_detalhada = item.get('ementaDetalhada', '')
+        keywords = item.get('keywords', [])
+
+        autor = {
+            'descricaoTipo': descricao_tipo,
+            'ementa': ementa,
+            'ementaDetalhada': ementa_detalhada,
+            'keywords': keywords
+        }
+        autores.append(autor)
+
+    return autores
+
+def scrape_proposicoes():
+    url = 'https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json'
     response = requests.get(url)
     data = response.json()
-    ementas = []
 
-    # Obtendo os dados adicionais das ementas
-    ementas_url = "https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json"
-    ementas_response = requests.get(ementas_url)
-    ementas_data = ementas_response.json()
-    ementas_dict = {proposicao["id"]: proposicao for proposicao in ementas_data["dados"]}
+    proposicoes = []
+    for item in data['dados']:
+        descricao_tipo = item.get('descricaoTipo', '')
+        ementa = item.get('ementa', '')
+        ementa_detalhada = item.get('ementaDetalhada', '')
+        keywords = item.get('keywords', [])
 
-    if "dados" in data:
-        for proposicao in data["dados"]:
-            ementa = proposicao["ementa"]
-            id_proposicao = proposicao["id"]
+        proposicao = {
+            'descricaoTipo': descricao_tipo,
+            'ementa': ementa,
+            'ementaDetalhada': ementa_detalhada,
+            'keywords': keywords
+        }
+        proposicoes.append(proposicao)
 
-            # Obtendo os autores das proposições
-            autores_url = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{id_proposicao}"
-            autores_response = requests.get(autores_url)
-            autores_data = autores_response.json()
-            autores_dict = {proposicao["idProposicao"]: proposicao["nomeAutor"] for proposicao in autores_data["dados"]["autores"]}
-
-            # Obtendo o autor da proposição
-            autor = autores_dict.get(id_proposicao, "Autor Desconhecido")
-
-            # Obtendo os dados adicionais da ementa
-            ementa_detalhada = ementas_dict[id_proposicao].get("ementaDetalhada", "")
-            keywords = ementas_dict[id_proposicao].get("keywords", "")
-
-            ementas.append((ementa, autor, ementa_detalhada, keywords))
-
-    return ementas
+    return proposicoes
 
 # Configurações da aplicação Streamlit
-st.title("Dados dos Deputados do RJ")
+st.title("Raspagem de Dados das Proposições")
 
-deputies = get_deputies_data()
+# Raspagem dos dados
+autores = scrape_proposicoes_autores()
+proposicoes = scrape_proposicoes()
 
-if deputies:
-    selected_deputy = st.selectbox("Selecione o deputado", deputies, format_func=lambda deputy: deputy["nome"])
-    deputy_id = selected_deputy["id"]
-    ementas = get_deputy_ementas(deputy_id)
+# Exibição dos resultados no Streamlit
+st.header("Proposições Autores")
+for autor in autores:
+    st.write(autor)
 
-    st.subheader("Dados do Deputado")
-    st.write("Nome:", selected_deputy["nome"])
-    st.write("Partido:", selected_deputy["siglaPartido"])
-    st.write("Proposições dos Deputados:")
-    for ementa, autor, ementa_detalhada, keywords in ementas:
-        st.write("- Autor:", autor)
-        st.write("  Ementa:", ementa)
-        st.write("  Ementa Detalhada:", ementa_detalhada)
-        st.write("  Palavras-chave:", keywords)
-else:
-    st.write("Não foram encontrados deputados do RJ.")
-
-
+st.header("Proposições")
+for proposicao in proposicoes:
+    st.write(proposicao)
