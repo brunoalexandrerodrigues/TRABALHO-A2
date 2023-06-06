@@ -14,22 +14,22 @@ def get_deputy_ementas(deputy_id):
     data = response.json()
     ementas = []
 
-    # Obtendo os autores das proposições
-    autores_url = "https://dadosabertos.camara.leg.br/api/v2/deputados/{deputy_id}/proposicoes?ordem=ASC&ordenarPor=id"
-    autores_response = requests.get(autores_url)
-    autores_data = autores_response.json()
-    autores_dict = {proposicao["id"]: proposicao["nomeAutor"] for proposicao in autores_data}
-
     # Obtendo os dados adicionais das ementas
     ementas_url = "https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json"
     ementas_response = requests.get(ementas_url)
     ementas_data = ementas_response.json()
-    ementas_dict = {proposicao["id"]: proposicao for proposicao in ementas_data}
+    ementas_dict = {proposicao["id"]: proposicao for proposicao in ementas_data["dados"]}
 
     if "dados" in data:
         for proposicao in data["dados"]:
             ementa = proposicao["ementa"]
             id_proposicao = proposicao["id"]
+
+            # Obtendo os autores das proposições
+            autores_url = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{id_proposicao}"
+            autores_response = requests.get(autores_url)
+            autores_data = autores_response.json()
+            autores_dict = {proposicao["idProposicao"]: proposicao["nomeAutor"] for proposicao in autores_data["dados"]["autores"]}
 
             # Obtendo o autor da proposição
             autor = autores_dict.get(id_proposicao, "Autor Desconhecido")
@@ -63,3 +63,4 @@ if deputies:
         st.write("  Palavras-chave:", keywords)
 else:
     st.write("Não foram encontrados deputados do RJ.")
+
