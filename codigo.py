@@ -1,5 +1,6 @@
 import requests
 import streamlit as st
+import pandas as pd
 
 def scrape_proposals(url_proposals, url_proposal_authors):
     response_proposals = requests.get(url_proposals)
@@ -32,6 +33,14 @@ def scrape_proposals(url_proposals, url_proposal_authors):
 
     return proposals
 
+def count_proposals(proposals):
+    counts = {}
+
+    for author, data in proposals.items():
+        counts[author] = len(data)
+
+    return counts
+
 url_proposals = 'https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json'
 url_proposal_authors = 'https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json'
 
@@ -43,13 +52,25 @@ proposals_rj = {author: data for author, data in proposals.items() if data[0]['s
 # Exibindo os dados no Streamlit
 st.title('Proposições dos Deputados do RJ')
 
-for author, data in proposals_rj.items():
-    st.write('---')
-    st.subheader('Autor')
-    st.write('Nome:', author)
-    st.write('Partido:', data[0]['siglaPartidoAutor'])
+# Lista de deputados
+deputies = list(proposals_rj.keys())
+selected_deputy = st.selectbox('Selecione o deputado', deputies)
 
-    st.subheader('Proposições')
-    for proposal in data:
-        url_proposal = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{proposal['idProposicao']}"
-        st.write(f"[Proposição {proposal['idProposicao']}]({url_proposal})")
+# Dados do deputado selecionado
+st.subheader('Dados do Deputado')
+data_deputy = proposals_rj[selected_deputy]
+st.write('Nome:', selected_deputy)
+st.write('Partido:', data_deputy[0]['siglaPartidoAutor'])
+
+# Proposições do deputado selecionado
+st.subheader('Proposições')
+for proposal in data_deputy:
+    url_proposal = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{proposal['idProposicao']}"
+    st.write(f"[Proposição {proposal['idProposicao']}]({url_proposal})")
+
+# Gráfico de número de proposições por deputado
+proposal_counts = count_proposals(proposals_rj)
+df_proposal_counts = pd.DataFrame.from_dict(proposal_counts, orient='index', columns=['Número de Proposições'])
+
+st.subheader('Número de Proposições por Deputado')
+st.bar_chart(df_proposal_counts)
