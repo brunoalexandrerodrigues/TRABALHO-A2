@@ -14,29 +14,12 @@ def get_deputy_ementas(deputy_id):
     data = response.json()
     ementas = []
 
-    # Obtendo os dados adicionais das ementas
-    ementas_url = "https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json"
-    ementas_response = requests.get(ementas_url)
-    ementas_data = ementas_response.json()
-    ementas_dict = {proposicao["id"]: proposicao for proposicao in ementas_data["dados"]}
-
     if "dados" in data:
         for proposicao in data["dados"]:
             ementa = proposicao["ementa"]
-            id_proposicao = proposicao["id"]
-
-            # Obtendo os autores das proposições
-            autores_url = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{id_proposicao}/autores"
-            autores_response = requests.get(autores_url)
-            autores_data = autores_response.json()
-            autores_dict = {proposicao["idProposicao"]: proposicao["nome"] for proposicao in autores_data["dados"]}
-
-            # Obtendo o autor da proposição
-            autor = autores_dict.get(id_proposicao, "Autor Desconhecido")
-
-            # Obtendo os dados adicionais da ementa
-            ementa_detalhada = ementas_dict[id_proposicao].get("ementaDetalhada", "")
-            keywords = ementas_dict[id_proposicao].get("keywords", [])
+            autor = proposicao["nomeAutor"]
+            ementa_detalhada = proposicao["ementaDetalhada"]
+            keywords = proposicao["keywords"]
 
             ementas.append((ementa, autor, ementa_detalhada, keywords))
 
@@ -55,7 +38,7 @@ if deputies:
     st.subheader("Dados do Deputado")
     st.write("Nome:", selected_deputy["nome"])
     st.write("Partido:", selected_deputy["siglaPartido"])
-    st.write("Ementas das Proposições:")
+    st.subheader("Ementas das Proposições:")
     for ementa, autor, ementa_detalhada, keywords in ementas:
         st.write("- Autor:", autor)
         st.write("  Ementa:", ementa)
