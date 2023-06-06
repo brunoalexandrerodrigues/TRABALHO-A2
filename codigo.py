@@ -20,7 +20,7 @@ def get_deputy_ementas(deputy_id):
     autores_data = autores_response.json()
     autores_dict = {}
     for proposicao in autores_data:
-        autor = proposicao.get("nomeAutor", "Autor Desconhecido")
+        autor = proposicao.get("nomeAutor") or "Autor Desconhecido"
         autores_dict[proposicao["idProposicao"]] = autor
 
     # Obtendo os dados adicionais das ementas
@@ -37,8 +37,8 @@ def get_deputy_ementas(deputy_id):
         autor = autores_dict.get(id_proposicao, "Autor Desconhecido")
 
         # Obtendo os dados adicionais da ementa
-        ementa_detalhada = ementas_dict[id_proposicao]["ementaDetalhada"]
-        keywords = ementas_dict[id_proposicao]["keywords"]
+        ementa_detalhada = ementas_dict[id_proposicao].get("ementaDetalhada", "")
+        keywords = ementas_dict[id_proposicao].get("keywords", "")
 
         ementas.append((ementa, autor, ementa_detalhada, keywords))
 
@@ -65,3 +65,4 @@ if deputies:
         st.write("  Palavras-chave:", keywords)
 else:
     st.write("Não foram encontrados deputados do RJ.")
+
