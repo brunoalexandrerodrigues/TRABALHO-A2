@@ -42,7 +42,11 @@ url_proposições_autores = 'https://dadosabertos.camara.leg.br/arquivos/proposi
 proposições = raspe_proposições(url_proposições, url_proposições_autores)
 
 # Filtrando apenas os deputados do RJ
-proposições_rj = {autor: data for autor, data in proposições.items() if data[0][3] == 'RJ'}
+proposições_rj = {}
+
+for autor, data in proposições.items():
+    if data and len(data) > 0 and data[0][3] == 'RJ':
+        proposições_rj[autor] = data
 
 # Exibindo os dados no Streamlit
 st.title('Proposições dos Deputados do RJ')
