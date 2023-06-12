@@ -2,73 +2,73 @@ import requests
 import streamlit as st
 import pandas as pd
 
-def raspe_proposiçoes(url_proposiçoes, url_proposiçoes_autores):
-    resposta_proposiçoes = requests.get(url_proposiçoes)
-    resposta_proposiçoes_autores = requests.get(url_proposiçoes_autores)
+def raspe_proposições(url_proposições, url_proposições_autores):
+    resposta_proposições = requests.get(url_proposições)
+    resposta_proposições_autores = requests.get(url_proposições_autores)
 
-    data_proposiçoes = resposta_proposiçoes.json()
-    data_propossiçoes_autores = resposta_proposiçoes_autores.json()
+    data_proposições = resposta_proposições.json()
+    data_proposições_autores = resposta_proposições_autores.json()
 
-    proposiçoes = {}
+    proposições = {}
 
-    for proposiçoes in data_proposiçoes['dados']:
-        id_proposiçoes = proposiçoes['id']
+    for proposição in data_proposições['dados']:
+        id_proposição = proposição['id']
 
-        for autor in data_proposiçoes_autores['dados']:
-            if autor['idProposicao'] == id_proposiçoes:
+        for autor in data_proposições_autores['dados']:
+            if autor['idProposicao'] == id_proposição:
                 tipo_autor = autor['tipoAutor']
                 nome_autor = autor['nomeAutor']
                 sigla_partido_autor = autor['siglaPartidoAutor']
                 sigla_uf_autor = autor['siglaUFAutor']
 
-                if nome_autor not in proposiçoes:
-                    proposiçoes[nome_autor] = set()
+                if nome_autor not in proposições:
+                    proposições[nome_autor] = set()
 
-                proposiçoes[nome_autor].add((id_proposiçoes, tipo_autor, sigla_partido_autor, sigla_uf_autor))
+                proposições[nome_autor].add((id_proposição, tipo_autor, sigla_partido_autor, sigla_uf_autor))
 
-    return proposiçoes
+    return proposições
 
-def count_proposals(proposiçoes):
+def count_proposals(proposições):
     numero = {}
 
-    for autor, data in proposiçoes.items():
+    for autor, data in proposições.items():
         numero[autor] = len(data)
 
     return numero
 
-url_proposiçoes = 'https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json'
-url_proposiçoes_autores = 'https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json'
+url_proposições = 'https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json'
+url_proposições_autores = 'https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json'
 
-proposiçoes = raspe_proposiçoes(url_proposiçoes, url_proposiçoes_autores)
+proposições = raspe_proposições(url_proposições, url_proposições_autores)
 
 # Filtrando apenas os deputados do RJ
-proposiçoes_rj = {autor: data for autor, data in proposiçoes.items() if data[0][3] == 'RJ'}
+proposições_rj = {autor: data for autor, data in proposições.items() if data[0][3] == 'RJ'}
 
 # Exibindo os dados no Streamlit
 st.title('Proposições dos Deputados do RJ')
 
 # Lista de deputados
-deputados = list(proposiçoes_rj.keys())
+deputados = list(proposições_rj.keys())
 selecione_deputado = st.selectbox('Selecione o deputado', deputados)
 
 # Dados do deputado selecionado
 st.subheader('Dados do Deputado')
-data_deputado = proposiçoes_rj[selecione_deputado]
+data_deputado = proposições_rj[selecione_deputado]
 st.write('Nome:', selecione_deputado)
 st.write('Partido:', data_deputado[0][2])
 
 # Proposições do deputado selecionado
 st.subheader('Proposições')
-proposiçoes_set = set()
-for proposiçao in data_deputado:
-    if proposiçao[0] not in proposiçoes_set:
-        proposiçoes_set.add(proposiçao[0])
-        url_proposiçoes = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{proposiçao[0]}"
-        st.write(f"[Proposição {proposiçao[0]}] - {proposiçao[1]}")
+proposições_set = set()
+for proposição in data_deputado:
+    if proposição[0] not in proposições_set:
+        proposições_set.add(proposição[0])
+        url_proposições = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{proposição[0]}"
+        st.write(f"[Proposição {proposição[0]}] - {proposição[1]}")
 
 # Gráfico de número de proposições por deputado
-proposiçao_numero = numero_proposiçoes(proposiçoes_rj)
-df_proposiçao_numero = pd.DataFrame.from_dict(proposiçao_numero, orient='index', columns=['Número de Proposições'])
+proposição_numero = count_proposals(proposições_rj)
+df_proposição_numero = pd.DataFrame.from_dict(proposição_numero, orient='index', columns=['Número de Proposições'])
 
 st.subheader('Número de Proposições por Deputado')
-st.bar_chart(df_proposiçao_numero)
+st.bar_chart(df_proposição_numero)
