@@ -28,13 +28,13 @@ def raspe_proposições(url_proposições, url_proposições_autores):
 
     return proposições
 
-def count_proposals(proposições):
-    numero = {}
+def count_proposições(proposições):
+    count = {}
 
     for autor, data in proposições.items():
-        numero[autor] = len(data)
+        count[autor] = len(data)
 
-    return numero
+    return count
 
 url_proposições = 'https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json'
 url_proposições_autores = 'https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json'
@@ -71,8 +71,8 @@ for proposição in data_deputado:
         st.write(f"[Proposição {proposição[0]}] - {proposição[1]}")
 
 # Gráfico de número de proposições por deputado
-proposição_numero = count_proposals(proposições_rj)
-df_proposição_numero = pd.DataFrame.from_dict(proposição_numero, orient='index', columns=['Número de Proposições'])
+proposição_count = count_proposições(proposições_rj)
+df_proposição_count = pd.DataFrame.from_dict(proposição_count, orient='index', columns=['Número de Proposições'])
 
 st.subheader('Número de Proposições por Deputado')
-st.bar_chart(df_proposição_numero)
+st.bar_chart(df_proposição_count)
