@@ -48,6 +48,7 @@ for autor, data in proposições.items():
     if data and len(data) > 0 and len(data[0]) > 3 and data[0][3] == 'RJ':
         proposições_rj[autor] = data
 
+
 # Exibindo os dados no Streamlit
 st.title('Proposições dos Deputados do RJ')
 
