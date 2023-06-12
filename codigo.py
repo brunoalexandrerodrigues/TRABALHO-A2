@@ -28,13 +28,14 @@ def raspe_proposições(url_proposições, url_proposições_autores):
 
     return proposições
 
-def count_proposições(proposições):
+def count_proposals(proposições):
     count = {}
 
     for autor, data in proposições.items():
-        count[autor] = len(data)
+        if isinstance(data, list):
+            count[autor] = len(data)
 
-    return count
+    return numero
 
 url_proposições = 'https://dadosabertos.camara.leg.br/arquivos/proposicoes/json/proposicoes-2023.json'
 url_proposições_autores = 'https://dadosabertos.camara.leg.br/arquivos/proposicoesAutores/json/proposicoesAutores-2023.json'
