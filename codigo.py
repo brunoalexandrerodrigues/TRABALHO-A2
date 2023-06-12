@@ -45,7 +45,7 @@ proposições = raspe_proposições(url_proposições, url_proposições_autores
 proposições_rj = {}
 
 for autor, data in proposições.items():
-    if data and len(data) > 0 and data[0][3] == 'RJ':
+    if data and len(data) > 0 and len(data[0]) > 3 and data[0][3] == 'RJ':
         proposições_rj[autor] = data
 
 # Exibindo os dados no Streamlit
