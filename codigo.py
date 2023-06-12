@@ -22,9 +22,9 @@ def scrape_proposals(url_proposals, url_proposal_authors):
                 sigla_uf_autor = author['siglaUFAutor']
 
                 if nome_autor not in proposals:
-                    proposals[nome_autor] = set()
+                    proposals[nome_autor] = list()
 
-                proposals[nome_autor].add((id_proposal, tipo_autor, sigla_partido_autor, sigla_uf_autor))
+                proposals[nome_autor].append((id_proposal, tipo_autor, sigla_partido_autor, sigla_uf_autor))
 
     return proposals
 
