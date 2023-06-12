@@ -42,7 +42,7 @@ url_proposal_authors = 'https://dadosabertos.camara.leg.br/arquivos/proposicoesA
 proposals = scrape_proposals(url_proposals, url_proposal_authors)
 
 # Filtrando apenas os deputados do RJ
-proposals_rj = {author: data for author, data in proposals.items() if data[0][3] == 'RJ'}
+proposals_rj = {author: data for author, data in proposals.items() if data and len(data) > 0 and data[0][3] == 'RJ'}
 
 # Exibindo os dados no Streamlit
 st.title('Proposições dos Deputados do RJ')
