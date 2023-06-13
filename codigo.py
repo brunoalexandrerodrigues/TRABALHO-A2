@@ -2,6 +2,7 @@ import requests
 import streamlit as st
 import pandas as pd
 
+@st.cache
 def scrape_proposals(url_proposals, url_proposal_authors):
     response_proposals = requests.get(url_proposals)
     response_proposal_authors = requests.get(url_proposal_authors)
@@ -62,7 +63,7 @@ proposals_limit = 5
 top_proposals = data_deputy[:proposals_limit]
 
 # Displaying the top proposals
-st.subheader(f'Top {proposals_limit} Proposals')
+st.subheader(f'Top {proposals_limit} Link das Proposições')
 proposals_set = set()
 for proposal in top_proposals:
     if proposal[0] not in proposals_set:
@@ -71,8 +72,8 @@ for proposal in top_proposals:
         st.markdown(f"[Proposição {proposal[0]}]({url_proposal}) - {proposal[1]}")
 
 # Total number of proposals
-total_proposals = len(data_deputy)
-st.write(f"Total Proposals: {total_proposals}")
+total_proposals = count_proposals(proposals_rj)[selected_deputy]
+st.write(f"Total Proposições: {total_proposals}")
 
 # Gráfico de número de proposições por deputado
 proposal_counts = count_proposals(proposals_rj)
