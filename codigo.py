@@ -63,7 +63,7 @@ proposals_limit = 5
 top_proposals = data_deputy[:proposals_limit]
 
 # Displaying the top proposals
-st.subheader(f'Top {proposals_limit} Link das Proposições')
+st.subheader(f'Top {proposals_limit} Proposições')
 proposals_set = set()
 for proposal in top_proposals:
     if proposal[0] not in proposals_set:
