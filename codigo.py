@@ -1,7 +1,10 @@
+#requests para fazer requisições HTTP, streamlit para criar a interface do aplicativo web, e pandas para manipulação de dados tabulares.
 import requests
 import streamlit as st
 import pandas as pd
 
+# scrape_proposals é responsável por fazer a raspagem dos dados das propostas e seus autores a partir de duas URLs fornecidas.
+# @st.cache é um decorador fornecido pelo Streamlit que permite o armazenamento em cache dos resultados de uma função
 @st.cache
 def scrape_proposals(url_proposals, url_proposal_authors):
     response_proposals = requests.get(url_proposals)
@@ -28,7 +31,7 @@ def scrape_proposals(url_proposals, url_proposal_authors):
                 proposals[nome_autor].append((id_proposal, tipo_autor, sigla_partido_autor, sigla_uf_autor))
 
     return proposals
-
+#count_proposals recebe o dicionário de propostas como argumento e retorna um novo dicionário com o nome do autor como chave e o número de propostas como valor
 def count_proposals(proposals):
     counts = {}
 
@@ -42,27 +45,27 @@ url_proposal_authors = 'https://dadosabertos.camara.leg.br/arquivos/proposicoesA
 
 proposals = scrape_proposals(url_proposals, url_proposal_authors)
 
-# Filtrando apenas os deputados do RJ
+# Filtrando apenas os deputados do RJ.
 proposals_rj = {author: data for author, data in proposals.items() if data and any(d[3] == 'RJ' for d in data)}
 
-# Exibindo os dados no Streamlit
+# Exibindo os dados no Streamlit.
 st.title('Proposições dos Deputados do RJ')
 
-# Lista de deputados
+# Lista de deputados.
 deputies = list(proposals_rj.keys())
 selected_deputy = st.selectbox('Selecione o deputado', deputies)
 
-# Dados do deputado selecionado
+# Dados do deputado selecionado.
 st.subheader('Dados do Deputado')
 data_deputy = proposals_rj[selected_deputy]
 st.write('Nome:', selected_deputy)
 st.write('Partido:', data_deputy[0][2])
 
-# Limiting the number of proposals to display
+# Limita o número de proposições para 5.
 proposals_limit = 5
 top_proposals = data_deputy[:proposals_limit]
 
-# Displaying the top proposals
+# Display para as 5 prpoposições
 st.subheader(f'Top {proposals_limit} Proposições')
 proposals_set = set()
 for proposal in top_proposals:
@@ -71,7 +74,7 @@ for proposal in top_proposals:
         url_proposal = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{proposal[0]}"
         st.markdown(f"[Proposição {proposal[0]}]({url_proposal}) - {proposal[1]}")
 
-# Total number of proposals
+# Total número de proposições
 total_proposals = count_proposals(proposals_rj)[selected_deputy]
 st.write(f"Total Proposições: {total_proposals}")
 
