@@ -57,14 +57,22 @@ data_deputy = proposals_rj[selected_deputy]
 st.write('Nome:', selected_deputy)
 st.write('Partido:', data_deputy[0][2])
 
-# Proposições do deputado selecionado
-st.subheader('Proposições')
+# Limiting the number of proposals to display
+proposals_limit = 10
+top_proposals = data_deputy[:proposals_limit]
+
+# Displaying the top proposals
+st.subheader(f'Top {proposals_limit} Proposals')
 proposals_set = set()
-for proposal in data_deputy:
+for proposal in top_proposals:
     if proposal[0] not in proposals_set:
         proposals_set.add(proposal[0])
         url_proposal = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{proposal[0]}"
         st.write(f"[Proposição {proposal[0]}] - {proposal[1]}")
+
+# Total number of proposals
+total_proposals = len(data_deputy)
+st.write(f"Total Proposals: {total_proposals}")
 
 # Gráfico de número de proposições por deputado
 proposal_counts = count_proposals(proposals_rj)
