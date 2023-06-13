@@ -58,7 +58,7 @@ st.write('Nome:', selected_deputy)
 st.write('Partido:', data_deputy[0][2])
 
 # Limiting the number of proposals to display
-proposals_limit = 10
+proposals_limit = 5
 top_proposals = data_deputy[:proposals_limit]
 
 # Displaying the top proposals
@@ -68,7 +68,7 @@ for proposal in top_proposals:
     if proposal[0] not in proposals_set:
         proposals_set.add(proposal[0])
         url_proposal = f"https://dadosabertos.camara.leg.br/api/v2/proposicoes/{proposal[0]}"
-        st.write(f"[Proposição {proposal[0]}] - {proposal[1]}")
+        st.markdown(f"[Proposição {proposal[0]}]({url_proposal}) - {proposal[1]}")
 
 # Total number of proposals
 total_proposals = len(data_deputy)
